@@ -2,6 +2,51 @@ menu.softdevice=SoftDevice
 menu.debug=Debug
 
 # -----------------------------------
+# Pine64 Pinetime nRF52832
+# -----------------------------------
+pinetime52832.name=Pine64 Pinetime nRF52832
+
+# VID/PID for Bootloader, Arduino & CircuitPython
+
+# Upload
+pinetime52832.bootloader.tool=bootburn
+pinetime52832.upload.tool=nrfutil
+pinetime52832.upload.protocol=nrfutil
+pinetime52832.upload.use_1200bps_touch=false
+pinetime52832.upload.wait_for_upload_port=false
+pinetime52832.upload.native_usb=false
+pinetime52832.upload.maximum_size=290816
+pinetime52832.upload.maximum_data_size=52224
+
+# Build
+pinetime52832.build.mcu=cortex-m4
+pinetime52832.build.f_cpu=64000000
+pinetime52832.build.board=NRF52832_PINETIME
+pinetime52832.build.core=nRF5
+pinetime52832.build.variant=pinetime_nrf52832
+pinetime52832.build.usb_manufacturer="Pine64"
+pinetime52832.build.usb_product="Pinetime nRF52832"
+pinetime52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
+pinetime52832.build.ldscript=nrf52832_s112_v6.ld
+
+# SoftDevice Menu
+pinetime52832.menu.softdevice.s132v6=S112 6.1.1
+pinetime52832.menu.softdevice.s132v6.build.sd_name=s112
+pinetime52832.menu.softdevice.s132v6.build.sd_version=6.1.1
+pinetime52832.menu.softdevice.s132v6.build.sd_fwid=0x0103
+
+# Debug Menu
+pinetime52832.menu.debug.l0=Level 0 (Release)
+pinetime52832.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+pinetime52832.menu.debug.l1=Level 1 (Error Message)
+pinetime52832.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+pinetime52832.menu.debug.l2=Level 2 (Full Debug)
+pinetime52832.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+pinetime52832.menu.debug.l3=Level 3 (Segger SystemView)
+pinetime52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+pinetime52832.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# -----------------------------------
 # Adafruit Feather nRF52832
 # -----------------------------------
 feather52832.name=Adafruit Feather nRF52832
