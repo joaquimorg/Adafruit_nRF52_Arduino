@@ -23,7 +23,7 @@ const uint32_t g_ADigitalPinMap[] = {
   14, // LCD_BACKLIGHT_LOW OUT
   15, // PUSH BUTTON_OUT OUT
   16, // VIBRATOR OUT OUT
-  17, // 
+  17, // RXD Debug ?
   18, // LCD_RS OUT
   19, // POWER PRESENCE INDICATION IN
   20, // 

@@ -157,3 +157,28 @@ tools.bootburn.erase.params.verbose=
 tools.bootburn.erase.params.quiet=
 tools.bootburn.erase.pattern=
 
+
+#***************************************************
+# SoftDevice
+#***************************************************
+tools.softdeviceburn.bootloader.file={runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.6.2_{build.sd_name}_{build.sd_version}
+
+tools.softdeviceburn.bootloader.params.verbose=
+tools.softdeviceburn.bootloader.params.quiet=
+tools.softdeviceburn.bootloader.pattern={program.burn_pattern}
+
+# erase flash page while programming
+tools.softdeviceburn.erase.params.verbose=
+tools.softdeviceburn.erase.params.quiet=
+tools.softdeviceburn.erase.pattern=
+
+#***************************************************
+# OpenOCD
+#***************************************************
+tools.openocd.cmd=openocd
+tools.openocd.cmd.windows=python
+tools.openocd.cmd.macosx=python
+
+tools.openocd.upload.params.verbose=
+tools.openocd.upload.params.quiet=
+tools.openocd.upload.pattern="{cmd}" "{runtime.platform.path}/tools/openocd/openocd.py" -path "{runtime.platform.path}" -hex {build.path}/{build.project_name}.hex

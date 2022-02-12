@@ -33,3 +33,24 @@ nrfutil_boot.program.burn_pattern={program.cmd} --verbose dfu serial -pkg "{boot
 nrfutil_boot.program.params.quiet=
 nrfutil_boot.program.params.verbose=
 nrfutil_boot.program.pattern=echo Please select <J-Link for Bluefruit nRF52> as programmer
+
+
+#**********************************************
+# xPack OpenOCD
+#**********************************************
+openocd.name=OpenOCD nRF52
+openocd.program.tool=softdeviceburn
+openocd.program.cmd=python
+openocd.program.cmd.windows=python
+
+# Burn bootloader pattern
+
+openocd.program.burn_pattern="{program.cmd}" "{runtime.platform.path}/tools/openocd/openocd.py" -path "{runtime.platform.path}" -hex "{bootloader.file}.hex"
+
+# OpenOCD to upload sketch
+openocd.program.params.quiet=
+openocd.program.params.verbose=
+openocd.program.pattern="{program.cmd}" "{runtime.platform.path}/tools/openocd/openocd.py" -path "{runtime.platform.path}" -hex "{build.path}/{build.project_name}.hex"
+
+# nrfjprog --erasepage {upload.BOOT_SETTING_ADDR} -f nrf52 && nrfjprog --memwr {upload.BOOT_SETTING_ADDR} --val 0x00000001 -f nrf52 && nrfjprog --reset -f nrf52
+# tools.nrfutil.upload.BOOT_SETTING_ADDR=0xFF000

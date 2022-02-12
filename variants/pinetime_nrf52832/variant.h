@@ -27,9 +27,9 @@ extern "C"
 
 // LEDs
 #define PIN_LED1             (27)
-//#define PIN_LED2             (19)
+#define PIN_LED2             (23)
 
-//#define LED_BUILTIN          PIN_LED1
+#define LED_BUILTIN          PIN_LED2
 //#define LED_CONN             PIN_LED2
 
 //#define LED_RED              PIN_LED1
@@ -70,7 +70,7 @@ static const uint8_t A7  = PIN_A7 ;
 /*
  * Serial interfaces
  */
-//#define PIN_SERIAL_RX       (8)
+#define PIN_SERIAL_RX       (17)
 #define PIN_SERIAL_TX       (11)
 
 /*

@@ -11,8 +11,8 @@ pinetime52832.name=Pine64 Pinetime nRF52832
 
 # Upload
 pinetime52832.bootloader.tool=bootburn
-pinetime52832.upload.tool=nrfutil
-pinetime52832.upload.protocol=nrfutil
+pinetime52832.upload.tool=openocd
+pinetime52832.upload.protocol=openocd
 pinetime52832.upload.use_1200bps_touch=false
 pinetime52832.upload.wait_for_upload_port=false
 pinetime52832.upload.native_usb=false
