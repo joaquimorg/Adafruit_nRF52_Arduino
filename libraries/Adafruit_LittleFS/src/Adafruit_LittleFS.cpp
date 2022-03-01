@@ -156,7 +156,7 @@ bool Adafruit_LittleFS::mkdir (char const *filepath)
   _lockFS();
 
   // make intermediate parent directory(ies)
-  while ( NULL != (slash = strchr(slash, '/')) )
+  /*while ( NULL != (slash = strchr(slash, '/')) )
   {
     char parent[slash - filepath + 1] = { 0 };
     memcpy(parent, filepath, slash - filepath);
@@ -169,7 +169,7 @@ bool Adafruit_LittleFS::mkdir (char const *filepath)
       break;
     }
     slash++;
-  }
+  }*/
   // make the final requested directory
   if (ret)
   {
