@@ -96,7 +96,9 @@ class BLEConnection
 
     bool setTxPower(int8_t power); // set power for this connection
 
+#ifndef S112
     bool requestDataLengthUpdate(ble_gap_data_length_params_t const *p_dl_params = NULL, ble_gap_data_length_limitation_t *p_dl_limitation = NULL);   
+#endif
     bool requestMtuExchange(uint16_t mtu);
     bool requestPHY(uint8_t phy = BLE_GAP_PHY_AUTO);
     bool requestConnectionParameter(uint16_t conn_interval, uint16_t slave_latency = BLE_GAP_CONN_SLAVE_LATENCY, uint16_t sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS/10);

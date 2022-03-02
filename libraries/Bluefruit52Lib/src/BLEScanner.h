@@ -44,6 +44,7 @@
 
 class BLEScanner
 {
+#ifndef S112 
 public:
   typedef void (*rx_callback_t  ) (ble_gap_evt_adv_report_t*);
   typedef void (*stop_callback_t) (void);
@@ -116,6 +117,7 @@ private:
   stop_callback_t _stop_cb;
 
   ble_gap_scan_params_t _param;
+#endif  
 };
 
 

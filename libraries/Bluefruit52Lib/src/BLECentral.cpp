@@ -37,6 +37,7 @@
 #include "bluefruit.h"
 #include "utility/bonding.h"
 
+#ifndef S112 
 /**
  * Constructor
  */
@@ -182,3 +183,4 @@ void BLECentral::_eventHandler(ble_evt_t* evt)
     default: break;
   }
 }
+#endif

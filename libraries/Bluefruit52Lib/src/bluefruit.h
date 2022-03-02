@@ -48,10 +48,17 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
+#ifndef S112
 #include "BLEScanner.h"
+#endif
+
+#ifndef S112
+#endif
 
 #include "BLEPeriph.h"
+#ifndef S112
 #include "BLECentral.h"
+#endif
 #include "BLEClientCharacteristic.h"
 #include "BLEClientService.h"
 #include "BLEDiscovery.h"
@@ -113,13 +120,18 @@ class AdafruitBluefruit
     /* Lower Level Classes (Bluefruit.Advertising.*, etc.)
      *------------------------------------------------------------------*/
     BLEPeriph          Periph;
+
+#ifndef S112
     BLECentral         Central;
+#endif
     BLESecurity        Security;
     BLEGatt            Gatt;
 
     BLEAdvertising     Advertising;
     BLEAdvertisingData ScanResponse;
+#ifndef S112    
     BLEScanner         Scanner;
+#endif
 
     BLEDiscovery       Discovery;
 
@@ -133,9 +145,13 @@ class AdafruitBluefruit
 
     // Configure Bandwidth for connections
     void configPrphConn        (uint16_t mtu_max, uint16_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+#ifndef S112
     void configCentralConn     (uint16_t mtu_max, uint16_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+#endif
     void configPrphBandwidth   (uint8_t bw);
+#ifndef S112
     void configCentralBandwidth(uint8_t bw);
+#endif
 
     bool begin(uint8_t prph_count = 1, uint8_t central_count = 0);
 
@@ -257,7 +273,9 @@ class AdafruitBluefruit
     friend void SD_EVT_IRQHandler(void);
     friend void adafruit_ble_task(void* arg);
     friend void adafruit_soc_task(void* arg);
+#ifndef S112
     friend class BLECentral;
+#endif
 };
 
 extern AdafruitBluefruit Bluefruit;

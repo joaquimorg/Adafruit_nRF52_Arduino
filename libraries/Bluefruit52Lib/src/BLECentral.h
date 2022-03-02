@@ -43,6 +43,7 @@ class AdafruitBluefruit;
 
 class BLECentral
 {
+#ifndef S112   
   public:
     BLECentral(void); // Constructor
     void begin(void);
@@ -77,6 +78,7 @@ class BLECentral
     ble_disconnect_callback_t _disconnect_cb;
 
     friend class AdafruitBluefruit;
+#endif    
 };
 
 

@@ -27,19 +27,19 @@ pinetime52832.build.core=nRF5
 pinetime52832.build.variant=pinetime_nrf52832
 pinetime52832.build.usb_manufacturer="Pine64"
 pinetime52832.build.usb_product="Pinetime nRF52832"
-pinetime52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
-pinetime52832.build.ldscript=nrf52832_s132_v6.ld
-#pinetime52832.build.ldscript=nrf52832_s112_v6.ld
+pinetime52832.build.extra_flags=-DNRF52832_XXAA -DS112 -DNRF52
+#pinetime52832.build.ldscript=nrf52832_s132_v6.ld
+pinetime52832.build.ldscript=nrf52832_s112_v6.ld
 
 # SoftDevice Menu
 pinetime52832.menu.softdevice.s112v6=S112 6.1.1
 pinetime52832.menu.softdevice.s112v6.build.sd_name=s112
 pinetime52832.menu.softdevice.s112v6.build.sd_version=6.1.1
 pinetime52832.menu.softdevice.s112v6.build.sd_fwid=0x0103
-pinetime52832.menu.softdevice.s132v6=S132 6.1.1
-pinetime52832.menu.softdevice.s132v6.build.sd_name=s132
-pinetime52832.menu.softdevice.s132v6.build.sd_version=6.1.1
-pinetime52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
+#pinetime52832.menu.softdevice.s132v6=S132 6.1.1
+#pinetime52832.menu.softdevice.s132v6.build.sd_name=s132
+#pinetime52832.menu.softdevice.s132v6.build.sd_version=6.1.1
+#pinetime52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
 
 # Debug Menu
 pinetime52832.menu.debug.l0=Level 0 (Release)
