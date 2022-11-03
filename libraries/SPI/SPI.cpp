@@ -89,7 +89,7 @@ void SPIClass::begin()
     .irq_priority   = 3,
     .orc            = 0xFF,
     // default setting 4 Mhz, Mode 0, MSB first
-    .frequency      = NRF_SPIM_FREQ_4M,
+    .frequency      = NRF_SPIM_FREQ_8M,
     .mode           = NRF_SPIM_MODE_0,
     .bit_order      = NRF_SPIM_BIT_ORDER_MSB_FIRST,
   };
