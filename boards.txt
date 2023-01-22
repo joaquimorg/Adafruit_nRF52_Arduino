@@ -27,7 +27,7 @@ pinetime52832.build.core=nRF5
 pinetime52832.build.variant=pinetime_nrf52832
 pinetime52832.build.usb_manufacturer="Pine64"
 pinetime52832.build.usb_product="Pinetime nRF52832"
-pinetime52832.build.extra_flags=-DNRF52832_XXAA -DS112 -DNRF52
+pinetime52832.build.extra_flags=-DNRF52832_XXAA -DS112 -DNRF52 -DNRF52_PAN_74 -DNRF52_PAN_64 -DNRF52_PAN_12 -DNRF52_PAN_58 -DNRF52_PAN_54 -DNRF52_PAN_31 -DNRF52_PAN_51 -DNRF52_PAN_36 -DNRF52_PAN_15 -DNRF52_PAN_20 -DNRF52_PAN_55 -DBOARD_PCA10040
 #pinetime52832.build.ldscript=nrf52832_s132_v6.ld
 pinetime52832.build.ldscript=nrf52832_s112_v6.ld
 
@@ -51,6 +51,60 @@ pinetime52832.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 pinetime52832.menu.debug.l3=Level 3 (Segger SystemView)
 pinetime52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 pinetime52832.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# -----------------------------------
+# joaquim.org PineTime nRF52840
+# -----------------------------------
+pinetime52840.name=joaquim.org PineTime nRF52840
+
+# VID/PID for Bootloader, Arduino & CircuitPython
+
+# Upload
+pinetime52840.bootloader.tool=bootburn
+pinetime52840.upload.tool=openocd
+pinetime52840.upload.protocol=openocd
+pinetime52840.upload.use_1200bps_touch=false
+pinetime52840.upload.wait_for_upload_port=false
+pinetime52840.upload.native_usb=false
+pinetime52840.upload.maximum_size=815104
+pinetime52840.upload.maximum_data_size=237568
+
+# Build
+pinetime52840.build.mcu=cortex-m4
+pinetime52840.build.f_cpu=64000000
+pinetime52840.build.board=NRF52840_PINETIME
+pinetime52840.build.core=nRF5
+pinetime52840.build.variant=pinetime_nrf52840
+pinetime52840.build.usb_manufacturer="joaquim.org"
+pinetime52840.build.usb_product="PineTime nRF52840"
+pinetime52840.build.extra_flags=-DNRF52840_XXAA
+pinetime52840.build.ldscript=nrf52840_s113_v7.ld
+
+# SoftDevice Menu
+pinetime52840.menu.softdevice.s140v6=S113 7.3.0
+pinetime52840.menu.softdevice.s140v6.build.sd_name=s113
+pinetime52840.menu.softdevice.s140v6.build.sd_version=7.3.0
+pinetime52840.menu.softdevice.s140v6.build.sd_fwid=0x0125
+
+# Debug Menu
+pinetime52840.menu.debug.l0=Level 0 (Release)
+pinetime52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+pinetime52840.menu.debug.l1=Level 1 (Error Message)
+pinetime52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+pinetime52840.menu.debug.l2=Level 2 (Full Debug)
+pinetime52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+pinetime52840.menu.debug.l3=Level 3 (Segger SystemView)
+pinetime52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+pinetime52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Debug Output Menu
+pinetime52840.menu.debug_output.serial=Serial
+pinetime52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+pinetime52840.menu.debug_output.serial1=Serial1
+pinetime52840.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+pinetime52840.menu.debug_output.rtt=Segger RTT
+pinetime52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
 
 # -----------------------------------
 # Adafruit Feather nRF52832

@@ -19,6 +19,7 @@ Following boards are also included but are not officially supported:
 - [Nordic nRF52840DK PCA10056](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK)
 - [Particle Xenon](https://store.particle.io/products/xenon)
 - [Pine64 Pinetime](https://www.pine64.org/pinetime/) 
+- [joaquim.org Pinetime nRF52840]
 
 ## BSP Installation
 
@@ -49,7 +50,7 @@ There are two methods that you can use to install this BSP. We highly recommend 
  5. Clone this repo & its submodules:
 
    ```
-   git clone https://github.com/adafruit/Adafruit_nRF52_Arduino.git
+   git clone https://github.com/joaquimorg/Adafruit_nRF52_Arduino.git
    cd Adafruit_nRF52_Arduino
    git submodule update --init
    ```

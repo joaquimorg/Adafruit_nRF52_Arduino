@@ -23,7 +23,7 @@
 
 
 void serialEventRun(void)
-{
+{/*
   if (serialEvent && Serial.available() ) serialEvent();
 
 #if defined(PIN_SERIAL1_RX) && defined(PIN_SERIAL1_TX)
@@ -32,7 +32,7 @@ void serialEventRun(void)
 
 #if defined(PIN_SERIAL2_RX) && defined(PIN_SERIAL2_TX)
   if (serialEvent2 && Serial2.available() ) serialEvent2();
-#endif
+#endif*/
 }
 
 Uart::Uart(NRF_UARTE_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX)
@@ -257,7 +257,8 @@ size_t Uart::write(const uint8_t *buffer, size_t size)
 #ifdef NRF52832_XXAA
   Uart Serial( NRF_UARTE0, UARTE0_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
 #else
-  Uart Serial1( NRF_UARTE0, UARTE0_UART0_IRQn, PIN_SERIAL1_RX, PIN_SERIAL1_TX );
+  //Uart Serial1( NRF_UARTE0, UARTE0_UART0_IRQn, PIN_SERIAL1_RX, PIN_SERIAL1_TX );
+  Uart Serial( NRF_UARTE0, UARTE0_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
 #endif
 
 extern "C"

@@ -169,3 +169,6 @@ make_board("particle_xenon", "particle_xenon", "Particle", "Xenon", "PARTICLE_XE
 
 make_board("pinetime52832", "pinetime_nrf52832", "Pine64", "Pinetime nRF52832", "NRF52832_PINETIME",
            "0x239A", [])
+
+make_board("pinetime52840", "pinetime_nrf52840", "joaquim.org", "Pinetime nRF52840", "NRF52840_PINETIME",
+           "0x239A", [])
