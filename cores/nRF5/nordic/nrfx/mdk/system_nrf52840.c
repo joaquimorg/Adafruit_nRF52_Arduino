@@ -109,9 +109,9 @@ void SystemInit(void)
     
     /* Workaround for Errata 103 "CCM: Wrong reset value of CCM MAXPACKETSIZE" found at the Errata document
        for your device located at https://infocenter.nordicsemi.com/index.jsp  */
-    if (nrf52_errata_103()){
-        NRF_CCM->MAXPACKETSIZE = 0xFBul;
-    }
+    //if (nrf52_errata_103()){
+    //    NRF_CCM->MAXPACKETSIZE = 0xFBul;
+    //}
     
     /* Workaround for Errata 115 "RAM: RAM content cannot be trusted upon waking up from System ON Idle or System OFF mode" found at the Errata document
        for your device located at https://infocenter.nordicsemi.com/index.jsp  */

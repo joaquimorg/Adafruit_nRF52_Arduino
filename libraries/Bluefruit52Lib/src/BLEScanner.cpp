@@ -36,7 +36,7 @@
 
 #include "bluefruit.h"
 
-#ifndef S112 
+#if !defined(S112) || !defined(S113) 
 BLEScanner::BLEScanner(void)
 {
   _report_data.p_data  = _scan_data;

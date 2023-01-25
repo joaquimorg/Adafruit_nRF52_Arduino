@@ -162,7 +162,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _sd_cfg.prph.event_len   = BLE_GAP_EVENT_LENGTH_DEFAULT;
   _sd_cfg.prph.hvn_qsize   = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
   _sd_cfg.prph.wrcmd_qsize = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
-#ifndef S112
+#if !defined(S112) || !defined(S113)
   _sd_cfg.central.mtu_max     = BLE_GATT_ATT_MTU_DEFAULT;
   _sd_cfg.central.event_len   = BLE_GAP_EVENT_LENGTH_DEFAULT;
   _sd_cfg.central.hvn_qsize   = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
@@ -212,7 +212,7 @@ void AdafruitBluefruit::configPrphConn(uint16_t mtu_max, uint16_t event_len, uin
   _sd_cfg.prph.hvn_qsize   = hvn_qsize;
   _sd_cfg.prph.wrcmd_qsize = wrcmd_qsize;
 }
-#ifndef S112
+#if !defined(S112) || !defined(S113)
 void AdafruitBluefruit::configCentralConn(uint16_t mtu_max, uint16_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
   _sd_cfg.central.mtu_max     = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);;
@@ -252,7 +252,7 @@ void AdafruitBluefruit::configPrphBandwidth(uint8_t bw)
   }
 }
 
-#ifndef S112
+#if !defined(S112) || !defined(S113)
 void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
 {
   /* Note default value from SoftDevice are
@@ -360,7 +360,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Roles
   varclr(&blecfg);
   blecfg.gap_cfg.role_count_cfg.periph_role_count  = _prph_count;
-#ifndef S112
+#if !defined(S112) || !defined(S113)
   blecfg.gap_cfg.role_count_cfg.central_role_count = _central_count;
   blecfg.gap_cfg.role_count_cfg.central_sec_count  = (_central_count ? 1 : 0); // 1 should be enough
 #endif
@@ -408,7 +408,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
     blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = _sd_cfg.prph.wrcmd_qsize;
     VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start), false );
   }
-#ifndef S112
+#if !defined(S112) || !defined(S113)
   if ( _central_count)
   {
     // ATT MTU
@@ -468,7 +468,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)), false);
 
   // Init Central role
-#ifndef S112  
+#if !defined(S112) || !defined(S113)  
   if (_central_count)  Central.begin();
 #endif
 
@@ -654,7 +654,7 @@ uint16_t AdafruitBluefruit::connHandle(void)
 
 uint16_t AdafruitBluefruit::getMaxMtu(uint8_t role)
 {
-#ifndef S112
+#if !defined(S112) || !defined(S113)
   return (role == BLE_GAP_ROLE_PERIPH) ? _sd_cfg.prph.mtu_max : _sd_cfg.central.mtu_max;
 #else
   return _sd_cfg.prph.mtu_max;
@@ -828,7 +828,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       }
 
       // Transmission buffer pool
-#ifndef S112
+#if !defined(S112) || !defined(S113)
       uint8_t const hvn_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _sd_cfg.prph.hvn_qsize : _sd_cfg.central.hvn_qsize;
       uint8_t const wrcmd_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _sd_cfg.prph.wrcmd_qsize : _sd_cfg.central.wrcmd_qsize;
 #else
@@ -845,7 +845,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         if ( Periph._connect_cb ) ada_callback(NULL, 0, Periph._connect_cb, conn_hdl);
       }else
       {
-#ifndef S112        
+#if !defined(S112) || !defined(S113)        
         if ( Central._connect_cb ) ada_callback(NULL, 0, Central._connect_cb, conn_hdl);
 #endif
       }
@@ -867,7 +867,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         if ( Periph._disconnect_cb ) ada_callback(NULL, 0, Periph._disconnect_cb, conn_hdl, para->reason);
       }else
       {
-#ifndef S112        
+#if !defined(S112) || !defined(S113)        
         if ( Central._disconnect_cb ) ada_callback(NULL, 0, Central._disconnect_cb, conn_hdl, para->reason);
 #endif
       }
@@ -900,7 +900,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   }
 
   Advertising._eventHandler(evt);
-#ifndef S112
+#if !defined(S112) || !defined(S113)
   Scanner._eventHandler(evt);
 #endif
 
@@ -942,7 +942,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   }
 
   // Central Event Handler (also handle generic non-connection event)
-#ifndef S112  
+#if !defined(S112) || !defined(S113)  
   if ( (conn == NULL) || (conn->getRole() == BLE_GAP_ROLE_CENTRAL) )
   {
     Central._eventHandler(evt);
@@ -1039,7 +1039,7 @@ void AdafruitBluefruit::printInfo(void)
     logger.println(_sd_cfg.prph.wrcmd_qsize);
   }
 
-#ifndef S112
+#if !defined(S112) || !defined(S113)
   if ( _central_count )
   {
     logger.println("Central Connect Setting");
@@ -1077,7 +1077,7 @@ void AdafruitBluefruit::printInfo(void)
   // Max Connections
   logger.printf(title_fmt, "Max Connections");
   logger.printf("Peripheral = %d, ", _prph_count);
-#ifndef S112  
+#if !defined(S112) || !defined(S113)  
   logger.printf("Central = %d ", _central_count);
 #endif
   logger.println();
@@ -1108,7 +1108,7 @@ void AdafruitBluefruit::printInfo(void)
     logger.println();
     bond_print_list(BLE_GAP_ROLE_PERIPH);
   }
-#ifndef S112
+#if !defined(S112) || !defined(S113)
   if ( _central_count )
   {
     logger.printf(title_fmt, "Central Paired Devices");

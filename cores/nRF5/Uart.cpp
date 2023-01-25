@@ -23,7 +23,7 @@
 
 
 void serialEventRun(void)
-{/*
+{
   if (serialEvent && Serial.available() ) serialEvent();
 
 #if defined(PIN_SERIAL1_RX) && defined(PIN_SERIAL1_TX)
@@ -32,7 +32,7 @@ void serialEventRun(void)
 
 #if defined(PIN_SERIAL2_RX) && defined(PIN_SERIAL2_TX)
   if (serialEvent2 && Serial2.available() ) serialEvent2();
-#endif*/
+#endif
 }
 
 Uart::Uart(NRF_UARTE_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX)

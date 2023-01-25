@@ -37,7 +37,7 @@
 #include "bluefruit.h"
 #include "utility/bonding.h"
 
-#ifndef S112 
+#if !defined(S112) || !defined(S113)
 /**
  * Constructor
  */

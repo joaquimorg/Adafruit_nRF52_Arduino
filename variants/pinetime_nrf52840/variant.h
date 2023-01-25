@@ -21,13 +21,13 @@ extern "C"
 #endif // __cplusplus
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (48)
-#define NUM_DIGITAL_PINS     (48)
-#define NUM_ANALOG_INPUTS    (6)
+#define PINS_COUNT           (24)
+#define NUM_DIGITAL_PINS     (24)
+#define NUM_ANALOG_INPUTS    (1)
 #define NUM_ANALOG_OUTPUTS   (0)
 
 // LEDs
-#define PIN_LED1             (2)
+#define PIN_LED1             (10)
 
 #define LED_BUILTIN          PIN_LED1
 #define LED_CONN             PIN_LED1
@@ -40,17 +40,17 @@ extern "C"
 /*
  * Buttons
  */
-#define PIN_BUTTON1          11
+#define PIN_BUTTON1          (11)
 
 /*
  * Analog pins
  */
-#define PIN_A0               (3)
-#define PIN_A1               (4)
-#define PIN_A2               (28)
-#define PIN_A3               (29)
-#define PIN_A4               (30)
-#define PIN_A5               (31)
+#define PIN_A0               (0)
+#define PIN_A1               (0xff)
+#define PIN_A2               (0xff)
+#define PIN_A3               (0xff)
+#define PIN_A4               (0xff)
+#define PIN_A5               (0xff)
 #define PIN_A6               (0xff)
 #define PIN_A7               (0xff)
 
@@ -65,9 +65,9 @@ static const uint8_t A7  = PIN_A7 ;
 #define ADC_RESOLUTION    14
 
 // Other pins
-#define PIN_AREF           (4)
-#define PIN_NFC1           (9)
-#define PIN_NFC2           (10)
+#define PIN_AREF           (0xff)
+#define PIN_NFC1           (0xff)
+#define PIN_NFC2           (0xff)
 
 static const uint8_t AREF = PIN_AREF;
 
@@ -75,23 +75,19 @@ static const uint8_t AREF = PIN_AREF;
  * Serial interfaces
  */
 
-#define PIN_SERIAL_RX      (1)
-#define PIN_SERIAL_TX      (0)
-
-// Connected to Jlink CDC
-//#define PIN_SERIAL2_RX      (8)
-//#define PIN_SERIAL2_TX      (6)
+#define PIN_SERIAL_RX      (13)
+#define PIN_SERIAL_TX      (15)
 
 /*
  * SPI Interfaces
  */
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MISO         (46)
-#define PIN_SPI_MOSI         (45)
-#define PIN_SPI_SCK          (47)
+#define PIN_SPI_MISO         (9)
+#define PIN_SPI_MOSI         (0xff)
+#define PIN_SPI_SCK          (6)
 
-static const uint8_t SS   = 44 ;
+static const uint8_t SS   = 4 ;
 static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;
@@ -101,19 +97,19 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
  */
 #define WIRE_INTERFACES_COUNT 1
 
-#define PIN_WIRE_SDA         (26)
-#define PIN_WIRE_SCL         (27)
+#define PIN_WIRE_SDA         (5)
+#define PIN_WIRE_SCL         (7)
 
 // QSPI Pins
-#define PIN_QSPI_SCK         19
-#define PIN_QSPI_CS          17
-#define PIN_QSPI_IO0         20
+#define PIN_QSPI_SCK         20
+#define PIN_QSPI_CS          18
+#define PIN_QSPI_IO0         19
 #define PIN_QSPI_IO1         21
 #define PIN_QSPI_IO2         22
-#define PIN_QSPI_IO3         23
+#define PIN_QSPI_IO3         14
 
 // On-board QSPI Flash
-#define EXTERNAL_FLASH_DEVICES   MX25R6435F // XT25F32BDFIGT-S
+#define EXTERNAL_FLASH_DEVICES   XT25F32BDFIGT // XT25F32BDFIGT-S
 #define EXTERNAL_FLASH_USE_QSPI
 
 #ifdef __cplusplus

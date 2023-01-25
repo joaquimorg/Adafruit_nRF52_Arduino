@@ -43,7 +43,7 @@ class AdafruitBluefruit;
 
 class BLECentral
 {
-#ifndef S112   
+#if !defined(S112) || !defined(S113)   
   public:
     BLECentral(void); // Constructor
     void begin(void);

@@ -44,7 +44,7 @@
 
 class BLEScanner
 {
-#ifndef S112 
+#if !defined(S112) || !defined(S113) 
 public:
   typedef void (*rx_callback_t  ) (ble_gap_evt_adv_report_t*);
   typedef void (*stop_callback_t) (void);
