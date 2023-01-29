@@ -55,6 +55,9 @@
   #define CFG_DEFAULT_NAME    "Feather nRF52832"
 #endif
 
+#undef BLE_GATT_ATT_MTU_DEFAULT
+#define BLE_GATT_ATT_MTU_DEFAULT 247
+
 #ifdef USE_TINYUSB
 #include "nrfx_power.h"
 

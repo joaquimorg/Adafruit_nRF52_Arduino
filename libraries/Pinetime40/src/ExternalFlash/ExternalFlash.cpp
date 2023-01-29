@@ -1,18 +1,56 @@
-
+#include "Arduino.h"
 #include "ExternalFlash.h"
-#include "flash_config.h"
+#include "nrf52_qspi.h"
 
-#define LFS_FLASH_TOTAL_SIZE  0x400000
-#define LFS_BLOCK_SIZE        4096
+enum {
+    SFLASH_CMD_READ = 0x03,      // Single Read
+    SFLASH_CMD_FAST_READ = 0x0B, // Fast Read
+    SFLASH_CMD_QUAD_READ = 0x6B, // 1 line address, 4 line data
+
+    SFLASH_CMD_READ_JEDEC_ID = 0x9f,
+
+    SFLASH_CMD_PAGE_PROGRAM = 0x02,
+    SFLASH_CMD_QUAD_PAGE_PROGRAM = 0x32, // 1 line address, 4 line data
+
+    SFLASH_CMD_READ_STATUS = 0x05,
+    SFLASH_CMD_READ_STATUS2 = 0x35,
+
+    SFLASH_CMD_WRITE_STATUS = 0x01,
+    SFLASH_CMD_WRITE_STATUS2 = 0x31,
+
+    SFLASH_CMD_ENABLE_RESET = 0x66,
+    SFLASH_CMD_RESET = 0x99,
+
+    SFLASH_CMD_WRITE_ENABLE = 0x06,
+    SFLASH_CMD_WRITE_DISABLE = 0x04,
+
+    SFLASH_CMD_ERASE_SECTOR = 0x20,
+    SFLASH_CMD_ERASE_BLOCK = 0xD8,
+    SFLASH_CMD_ERASE_CHIP = 0xC7,
+
+    SFLASH_CMD_4_BYTE_ADDR = 0xB7,
+    SFLASH_CMD_3_BYTE_ADDR = 0xE9,
+};
+
+/// Constant that is (mostly) true to all external flash devices
+enum {
+    SFLASH_BLOCK_SIZE = 64 * 1024UL,
+    SFLASH_SECTOR_SIZE = 4 * 1024,
+    SFLASH_PAGE_SIZE = 256,
+    SFLASH_START = 1024,
+};
+
+#define LFS_FLASH_TOTAL_SIZE  0x3FF000
 
 static inline uint32_t lba2addr(uint32_t block)
 {
-    return LFS_BLOCK_SIZE + (block * LFS_BLOCK_SIZE);
+    return SFLASH_START + (block * SFLASH_PAGE_SIZE);
 }
 
 static int _external_flash_read(const struct lfs_config* c, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
-    //(void)c;    
+    //(void)c;
+    if( size == 0 ) return 0;
     ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
     uint32_t addr = lba2addr(block) + off;
     Serial.print("E R > ");
@@ -22,8 +60,7 @@ static int _external_flash_read(const struct lfs_config* c, lfs_block_t block, l
     Serial.print(" : ");
     Serial.print(size);
     Serial.println("");
-    //eflash.spiFlash.readSectors(addr, (uint8_t*)buffer, size);
-    eflash.spiFlash.readBuffer(addr, (uint8_t*)buffer, size);
+    eflash.readBuffer(addr, (uint8_t*)buffer, size);
     eflash.dump_buf((uint8_t*)buffer, size);
     return 0;
 }
@@ -43,8 +80,7 @@ static int _external_flash_prog(const struct lfs_config* c, lfs_block_t block, l
     Serial.print(" : ");
     Serial.print(size);
     Serial.println("");
-    //eflash.spiFlash.writeSectors(addr, (uint8_t*)buffer, size);
-    eflash.spiFlash.writeBuffer(addr, (const uint8_t*)buffer, size);
+    eflash.writeBuffer(addr, (const uint8_t*)buffer, size);
     eflash.dump_buf((uint8_t*)buffer, size);
     return 0;
 }
@@ -58,26 +94,26 @@ static int _external_flash_erase(const struct lfs_config* c, lfs_block_t block)
     //(void)c;
     ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
     uint32_t addr = lba2addr(block);
-    /*Serial.print("E E > ");
+    Serial.print("E E > ");
     Serial.print(block);
-    Serial.println("");*/
-    eflash.spiFlash.eraseSector(addr);
+    Serial.println("");
+    eflash.eraseSector(addr);
     return 0;
 }
 
 // Sync the state of the underlying block device.
 static int _external_flash_sync(const struct lfs_config* c)
 {
-    //(void)c;
-    ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
-    eflash.spiFlash.syncDevice();
+    (void)c;
+    //ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
+    //eflash.spiFlash.syncDevice();
     return 0;
 }
 
 ExternalFlash ExternalFS;
 
 //--------------------------------------------------------------------
-
+/*
 #define XT25F32BDFIGT \
   { \
     .total_size = 0x400000, \
@@ -93,11 +129,12 @@ static const SPIFlash_Device_t my_flash_devices[] = {
   XT25F32BDFIGT,
 };
 const int flashDevices = 1;
+*/
 
 ExternalFlash::ExternalFlash(void)
     : Adafruit_LittleFS()
 {
-    spiFlash = Adafruit_SPIFlash(&flashTransport);
+    //spiFlash = Adafruit_SPIFlash(&flashTransport);
 }
 
 void ExternalFlash::dump_sector(uint32_t sector, uint32_t off)
@@ -110,7 +147,7 @@ void ExternalFlash::dump_sector(uint32_t sector, uint32_t off)
     Serial.print(" : ");
     Serial.println(off);
 
-    spiFlash.readBuffer((sector * LFS_BLOCK_SIZE) + off, buf, 256);
+    //spiFlash.readBuffer((sector * SFLASH_PAGE_SIZE) + off, buf, 256);
 
     for (uint32_t row = 0; row < sizeof(buf) / 16; row++)
     {
@@ -157,6 +194,88 @@ void ExternalFlash::dump_buf(uint8_t* buf, uint16_t size)
     }
 }
 
+uint8_t ExternalFlash::readStatus(void) {
+    uint8_t status;
+    nrf52_qspi_read_command(SFLASH_CMD_READ_STATUS, &status, 1);
+    return status;
+}
+
+uint8_t ExternalFlash::readStatus2(void) {
+    uint8_t status;
+    nrf52_qspi_read_command(SFLASH_CMD_READ_STATUS2, &status, 1);
+    return status;
+}
+
+bool ExternalFlash::writeEnable(void) {
+    return nrf52_qspi_run_command(SFLASH_CMD_WRITE_ENABLE);
+}
+
+bool ExternalFlash::writeDisable(void) {
+    return nrf52_qspi_run_command(SFLASH_CMD_WRITE_DISABLE);
+}
+
+void ExternalFlash::waitUntilReady(void) {
+    // both WIP and WREN bit should be clear
+    while (readStatus() & 0x03) {
+        yield();
+    }
+}
+
+bool ExternalFlash::eraseChip(void) {
+    waitUntilReady();
+    writeEnable();
+
+    bool const ret = nrf52_qspi_run_command(SFLASH_CMD_ERASE_CHIP);
+    return ret;
+}
+
+bool ExternalFlash::eraseSector(uint32_t sectorNumber) {
+
+    // Before we erase the sector we need to wait for any writes to finish
+    waitUntilReady();
+    writeEnable();
+
+    bool const ret = nrf52_qspi_erase_command(SFLASH_CMD_ERASE_SECTOR,
+        sectorNumber * SFLASH_SECTOR_SIZE);
+
+
+    return ret;
+}
+
+uint32_t ExternalFlash::readBuffer(uint32_t address, uint8_t* buffer, uint32_t len) {
+    waitUntilReady();
+    bool const rc = nrf52_qspi_read_write_memory(true, address, buffer, len);
+    return rc ? len : 0;
+}
+
+uint32_t ExternalFlash::writeBuffer(uint32_t address, uint8_t const* buffer, uint32_t len) {
+
+    uint32_t remain = len;
+
+    // write one page (256 bytes) at a time and
+    // must not go over page boundary
+    while (remain) {
+        waitUntilReady();
+        writeEnable();
+
+        uint32_t const leftOnPage =
+            SFLASH_PAGE_SIZE - (address & (SFLASH_PAGE_SIZE - 1));
+        uint32_t const toWrite = min(remain, leftOnPage);
+
+        if (!nrf52_qspi_read_write_memory(false, address, (uint8_t *)buffer, toWrite))
+            break;
+
+        remain -= toWrite;
+        buffer += toWrite;
+        address += toWrite;
+    }
+
+    len -= remain;
+
+
+    return len;
+}
+
 bool ExternalFlash::begin(void)
 {
     lfs_config lcfg = {
@@ -167,47 +286,79 @@ bool ExternalFlash::begin(void)
         .erase = _external_flash_erase,
         .sync = _external_flash_sync,
 
-        .read_size = 256,
-        .prog_size = 256,
-        .block_size = LFS_BLOCK_SIZE,
-        .block_count = LFS_FLASH_TOTAL_SIZE / LFS_BLOCK_SIZE,
-        .block_cycles = 1000,
+        .read_size = 128,
+        .prog_size = 128,
+        .block_size = SFLASH_PAGE_SIZE,
+        .block_count = LFS_FLASH_TOTAL_SIZE / SFLASH_PAGE_SIZE,
+        .block_cycles = 5000,
         .cache_size = 256,
-        .lookahead_size = 8,
+        .lookahead_size = 256,
         .name_max = 50,
         .attr_max = 50,
     };
 
     Serial.println("Serial Flash Info : ");
-    spiFlash.begin(my_flash_devices, flashDevices);
+    //spiFlash.begin(my_flash_devices, flashDevices);
+    nrf52_qspi_begin();
 
-    Serial.print("JEDEC ID: 0x");
-    Serial.println(spiFlash.getJEDECID(), HEX);
-    Serial.print("Flash size: ");
-    Serial.print(spiFlash.size() / 1024);
-    Serial.println(" KB");
+    uint8_t jedec_ids[4];
+    nrf52_qspi_read_command(SFLASH_CMD_READ_JEDEC_ID, jedec_ids, 4);
+
+    Serial.printf("JEDEC ID: %02X %02X %02X %02X\n", jedec_ids[0], jedec_ids[1], jedec_ids[2], jedec_ids[3]);
+    /*Serial.print(jedec_ids[0], HEX);
+    Serial.print(jedec_ids[1], HEX);
+    Serial.print(jedec_ids[2], HEX);
+    Serial.print(jedec_ids[3], HEX);*/
     Serial.println("");
+    //Serial.print("Flash size: ");
+    //Serial.print(spiFlash.size() / 1024);
+    //Serial.println(" KB");
+    //Serial.println("");
 
-    /*Serial.println("Erasing chip!");
-    if (!spiFlash.eraseChip()) {
+    // The write in progress bit should be low.
+    while (readStatus() & 0x01) {}
+
+    // The suspended write/erase bit should be low.    
+    while (readStatus2() & 0x80) {}
+
+    nrf52_qspi_run_command(SFLASH_CMD_ENABLE_RESET);
+    nrf52_qspi_run_command(SFLASH_CMD_RESET);
+
+    // Wait 30us for the reset
+    delayMicroseconds(30);
+
+    uint8_t status = readStatus2();
+
+    // Check the quad enable bit.
+    if ((status & 0x02) == 0) {
+        writeEnable();
+        uint8_t full_status[2] = {0x00, 0x02};
+        nrf52_qspi_write_command(SFLASH_CMD_WRITE_STATUS, full_status, 2);
+    }
+
+    //nrf52_qspi_run_command(SFLASH_CMD_4_BYTE_ADDR);
+
+    /*Serial.println("> QSPI Init done.");
+    Serial.println("Erasing chip!");
+    if (!eraseChip()) {
         Serial.println("Failed to erase chip!");
     }
 
-    spiFlash.waitUntilReady();
+    waitUntilReady();
     Serial.println("Successfully erased chip!");
 
     return false;*/
 
 
     /*
-    //spiFlash.waitUntilReady();
+    //waitUntilReady();
 
     uint8_t buf[5] = { 0x00, 0x01, 0x02, 0x03, 0x04 };
 
     Serial.println("Write Sector 0:0!");
-    spiFlash.writeBuffer(0, buf, 5);
+    writeBuffer(0, buf, 5);
 
-    spiFlash.waitUntilReady();
+    waitUntilReady();
     Serial.println("Successfully write to chip!");*/
 
     /*Serial.println("Dump Sectors ");
@@ -220,11 +371,11 @@ bool ExternalFlash::begin(void)
     if (!Adafruit_LittleFS::begin(&lcfg))
     {
         Serial.println("Erasing External chip!");
-        if (!spiFlash.eraseChip()) {
+        if (!eraseChip()) {
             Serial.println("Failed to erase chip!");
             return false;
         }
-        spiFlash.waitUntilReady();
+        waitUntilReady();
         Serial.println("Successfully erased chip!");
 
         Serial.println("Format External fs");

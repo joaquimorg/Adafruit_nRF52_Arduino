@@ -44,7 +44,11 @@ void enable_spi(bool state) {
   }
 }
 
+static uint8_t* spim3_transmit_buffer = (uint8_t*)0x20002F10;
+
 void write_fast_spi(const uint8_t* ptr, uint32_t len, bool mode) {
+
+  //if (len > 0x2000) return;
 
   if (mode)
     NRF_GPIOTE->TASKS_SET[1] = 1;
@@ -52,13 +56,16 @@ void write_fast_spi(const uint8_t* ptr, uint32_t len, bool mode) {
     NRF_GPIOTE->TASKS_CLR[1] = 1;
 
   int v2 = 0;
-#pragma unroll (4) 
+//#pragma unroll (4) 
   do
   {
     NRF_SPIM3->EVENTS_END = 0;
     NRF_SPIM3->EVENTS_ENDRX = 0;
     NRF_SPIM3->EVENTS_ENDTX = 0;
-    NRF_SPIM3->TXD.PTR = (uint32_t)ptr + v2;
+
+    memcpy(spim3_transmit_buffer, ptr + v2, 255);
+    NRF_SPIM3->TXD.PTR = (uint32_t)spim3_transmit_buffer;
+
     if (len <= 0xFF)
     {
       NRF_SPIM3->TXD.MAXCNT = len;
@@ -71,6 +78,7 @@ void write_fast_spi(const uint8_t* ptr, uint32_t len, bool mode) {
       v2 += 255;
       len -= 255;
     }
+
     NRF_SPIM3->RXD.PTR = 0;
     NRF_SPIM3->RXD.MAXCNT = 0;
     NRF_SPIM3->TASKS_START = 1;

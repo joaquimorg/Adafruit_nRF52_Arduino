@@ -67,7 +67,7 @@ pinetime40.upload.use_1200bps_touch=false
 pinetime40.upload.wait_for_upload_port=false
 pinetime40.upload.native_usb=false
 pinetime40.upload.maximum_size=856064
-pinetime40.upload.maximum_data_size=251648
+pinetime40.upload.maximum_data_size=241904
 
 # Build
 pinetime40.build.mcu=cortex-m4
