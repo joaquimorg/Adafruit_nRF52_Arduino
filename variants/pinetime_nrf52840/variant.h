@@ -71,6 +71,18 @@ static const uint8_t A7  = PIN_A7 ;
 
 static const uint8_t AREF = PIN_AREF;
 
+#define PIN_TP_IRQ          (17)
+#define PIN_TP_RST          (16)
+
+#define PIN_BMA421_IRQ      (12)
+
+#define PIN_KEY_ACTION      (11)
+
+#define PIN_CHARGE_IRQ      (1)  // CHARGE INDICATION
+#define PIN_VIBRATOR_CTRL   (2)  // 
+
+#define PIN_BATTERY_VOL     (0) //NRF_SAADC_INPUT_AIN7   // 31 Analog
+
 /*
  * Serial interfaces
  */
@@ -81,13 +93,23 @@ static const uint8_t AREF = PIN_AREF;
 /*
  * SPI Interfaces
  */
+
+// nRF52840 has only one SPIM3 runing at highspeed 32Mhz
+// This assign SPIM3 to either: SPI (0), SPI1 (1).
+// If not defined, default to 0 or SPI.
+//#define SPI_32MHZ_INTERFACE  1
+
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MISO         (9)
-#define PIN_SPI_MOSI         (0xff)
+#define PIN_SPI_MISO         (0xff)
+#define PIN_SPI_MOSI         (9)
 #define PIN_SPI_SCK          (6)
 
-static const uint8_t SS   = 4 ;
+#define PIN_LCD_RST          (8)
+#define PIN_LCD_CSN          (4)
+#define PIN_LCD_DC           (3)
+
+static const uint8_t SS   = (0xff) ;
 static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;

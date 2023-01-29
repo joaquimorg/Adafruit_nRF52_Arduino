@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 hathach for Adafruit Industries
@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 
+#include "Arduino.h"
 #include "InternalFileSystem.h"
 #include "flash/flash_nrf5x.h"
 
@@ -34,21 +35,29 @@
 #define LFS_FLASH_TOTAL_SIZE  (7*FLASH_NRF52_PAGE_SIZE)
 #define LFS_BLOCK_SIZE        128
 
-//--------------------------------------------------------------------+
-// LFS Disk IO
-//--------------------------------------------------------------------+
+ //--------------------------------------------------------------------+
+ // LFS Disk IO
+ //--------------------------------------------------------------------+
 
 static inline uint32_t lba2addr(uint32_t block)
 {
-  return ((uint32_t) LFS_FLASH_ADDR) + block * LFS_BLOCK_SIZE;
+  return ((uint32_t)LFS_FLASH_ADDR) + block * LFS_BLOCK_SIZE;
 }
 
-static int _internal_flash_read (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
+static int _internal_flash_read(const struct lfs_config* c, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
-  (void) c;
+  (void)c;
 
   uint32_t addr = lba2addr(block) + off;
-  VERIFY( flash_nrf5x_read(buffer, addr, size) > 0, -1);
+
+  /*Serial.print("I R > ");
+  Serial.print(block);
+  Serial.print(" : ");
+  Serial.print(off);
+  Serial.print(" : ");
+  Serial.print(size);
+  Serial.println("");*/
+  VERIFY(flash_nrf5x_read(buffer, addr, size) > 0, -1);
 
   return 0;
 }
@@ -56,28 +65,41 @@ static int _internal_flash_read (const struct lfs_config *c, lfs_block_t block, 
 // Program a region in a block. The block must have previously
 // been erased. Negative error codes are propogated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
-static int _internal_flash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size)
+static int _internal_flash_prog(const struct lfs_config* c, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
 {
-  (void) c;
+  (void)c;
 
   uint32_t addr = lba2addr(block) + off;
-  VERIFY( flash_nrf5x_write(addr, buffer, size), -1)
+  /*Serial.print("I W > ");
+  Serial.print(block);
+  Serial.print(" : ");
+  Serial.print(off);
+  Serial.print(" : ");
+  Serial.print(size);
+  Serial.println("");*/
+  VERIFY(flash_nrf5x_write(addr, buffer, size), -1)
 
-  return 0;
+    return 0;
 }
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
 // are propogated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
-static int _internal_flash_erase (const struct lfs_config *c, lfs_block_t block)
+static int _internal_flash_erase(const struct lfs_config* c, lfs_block_t block)
 {
-  (void) c;
+  (void)c;
 
   uint32_t addr = lba2addr(block);
 
+  /*Serial.print("I E > ");
+  Serial.print(block);
+  Serial.print(" : ");
+  Serial.print(LFS_BLOCK_SIZE);
+  Serial.println("");*/
+
   // implement as write 0xff to whole block address
-  for(int i=0; i <LFS_BLOCK_SIZE; i++)
+  for (int i = 0; i < LFS_BLOCK_SIZE; i++)
   {
     flash_nrf5x_write8(addr + i, 0xFF);
   }
@@ -89,9 +111,9 @@ static int _internal_flash_erase (const struct lfs_config *c, lfs_block_t block)
 
 // Sync the state of the underlying block device. Negative error codes
 // are propogated to the user.
-static int _internal_flash_sync (const struct lfs_config *c)
+static int _internal_flash_sync(const struct lfs_config* c)
 {
-  (void) c;
+  (void)c;
   flash_nrf5x_flush();
   return 0;
 }
@@ -110,12 +132,11 @@ static struct lfs_config _InternalFSConfig =
   .prog_size = LFS_BLOCK_SIZE,
   .block_size = LFS_BLOCK_SIZE,
   .block_count = LFS_FLASH_TOTAL_SIZE / LFS_BLOCK_SIZE,
-  .lookahead = 128,
-
-  .read_buffer = NULL,
-  .prog_buffer = NULL,
-  .lookahead_buffer = NULL,
-  .file_buffer = NULL
+  .block_cycles = 1000,
+  .cache_size = 128,
+  .lookahead_size = 128,
+  .name_max = 50,
+  .attr_max = 50,
 };
 
 InternalFileSystem InternalFS;
@@ -133,19 +154,19 @@ InternalFileSystem::InternalFileSystem(void)
 bool InternalFileSystem::begin(void)
 {
   // failed to mount, erase all sector then format and mount again
-  if ( !Adafruit_LittleFS::begin() )
+  if (!Adafruit_LittleFS::begin())
   {
     // Erase all sectors of internal flash region for Filesystem.
-    for ( uint32_t addr = LFS_FLASH_ADDR; addr < LFS_FLASH_ADDR + LFS_FLASH_TOTAL_SIZE; addr += FLASH_NRF52_PAGE_SIZE )
+    for (uint32_t addr = LFS_FLASH_ADDR; addr < LFS_FLASH_ADDR + LFS_FLASH_TOTAL_SIZE; addr += FLASH_NRF52_PAGE_SIZE)
     {
-      VERIFY( flash_nrf5x_erase(addr) );
+      VERIFY(flash_nrf5x_erase(addr));
     }
 
     // lfs format
     this->format();
 
     // mount again if still failed, give up
-    if ( !Adafruit_LittleFS::begin() ) return false;
+    if (!Adafruit_LittleFS::begin()) return false;
   }
 
   return true;

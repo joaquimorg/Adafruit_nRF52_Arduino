@@ -66,8 +66,8 @@ pinetime40.upload.protocol=openocd
 pinetime40.upload.use_1200bps_touch=false
 pinetime40.upload.wait_for_upload_port=false
 pinetime40.upload.native_usb=false
-pinetime40.upload.maximum_size=933888
-pinetime40.upload.maximum_data_size=251744
+pinetime40.upload.maximum_size=856064
+pinetime40.upload.maximum_data_size=251648
 
 # Build
 pinetime40.build.mcu=cortex-m4
@@ -79,6 +79,7 @@ pinetime40.build.usb_manufacturer="joaquimorg"
 pinetime40.build.usb_product="PineTime nRF52840"
 pinetime40.build.extra_flags=-DNRF52840_XXAA -DS113
 pinetime40.build.ldscript=nrf52840_s113_v7.ld
+#pinetime40.build.ldscript=nrf52840_s140_v7.ld
 
 # SoftDevice Menu
 pinetime40.menu.softdevice.s140v6=S140 6.1.1
@@ -90,6 +91,11 @@ pinetime40.menu.softdevice.s113v7=S113 7.3.0
 pinetime40.menu.softdevice.s113v7.build.sd_name=s113
 pinetime40.menu.softdevice.s113v7.build.sd_version=7.3.0
 pinetime40.menu.softdevice.s113v7.build.sd_fwid=0x0125
+
+#pinetime40.menu.softdevice.s140v7=S140 7.2.0
+#pinetime40.menu.softdevice.s140v7.build.sd_name=s140
+#pinetime40.menu.softdevice.s140v7.build.sd_version=7.2.0
+#pinetime40.menu.softdevice.s140v7.build.sd_fwid=0x0100
 
 # Debug Menu
 pinetime40.menu.debug.l0=Level 0 (Release)

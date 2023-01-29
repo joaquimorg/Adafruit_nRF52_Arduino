@@ -117,10 +117,8 @@ bool File::_open (char const *filepath, uint8_t mode)
 
   // close if currently opened
   if ( this->isOpen() ) _close();
-
   struct lfs_info info;
   int rc = lfs_stat(_fs->_getFS(), filepath, &info);
-
   if ( LFS_ERR_OK == rc )
   {
     // file existed, open file or directory accordingly
