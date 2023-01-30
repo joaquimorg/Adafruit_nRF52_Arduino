@@ -47,7 +47,6 @@ Adafruit_LittleFS::Adafruit_LittleFS (struct lfs_config* cfg)
   _lfs_cfg = cfg;
   _mounted = false;
   _mutex = xSemaphoreCreateMutexStatic(&this->_MutexStorageSpace);
-  Serial.println("Adafruit_LittleFS::init");
 }
 
 Adafruit_LittleFS::~Adafruit_LittleFS ()
@@ -155,6 +154,7 @@ bool Adafruit_LittleFS::mkdir (char const *filepath)
   if ( slash[0] == '/' ) slash++;    // skip root '/'
 
   _lockFS();
+
   // make intermediate parent directory(ies)
   while ( NULL != (slash = strchr(slash, '/')) )
   {
@@ -180,6 +180,7 @@ bool Adafruit_LittleFS::mkdir (char const *filepath)
       ret = false;
     }
   }
+
   _unlockFS();
   return ret;
 }

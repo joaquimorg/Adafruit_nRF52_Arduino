@@ -77,20 +77,25 @@ pinetime40.build.core=nRF5
 pinetime40.build.variant=pinetime_nrf52840
 pinetime40.build.usb_manufacturer="joaquimorg"
 pinetime40.build.usb_product="PineTime nRF52840"
-pinetime40.build.extra_flags=-DNRF52840_XXAA -DS113 -DNRF52 
+pinetime40.build.extra_flags=-DNRF52840_XXAA -DS113
 pinetime40.build.ldscript=nrf52840_s113_v7.ld
 #pinetime40.build.ldscript=nrf52840_s140_v7.ld
 
 # SoftDevice Menu
-#pinetime40.menu.softdevice.s140v6=S140 6.1.1
-#pinetime40.menu.softdevice.s140v6.build.sd_name=s140
-#pinetime40.menu.softdevice.s140v6.build.sd_version=6.1.1
-#pinetime40.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+pinetime40.menu.softdevice.s140v6=S140 6.1.1
+pinetime40.menu.softdevice.s140v6.build.sd_name=s140
+pinetime40.menu.softdevice.s140v6.build.sd_version=6.1.1
+pinetime40.menu.softdevice.s140v6.build.sd_fwid=0x0125
 
-pinetime40.menu.softdevice.s113v7=S113 7.3.0
-pinetime40.menu.softdevice.s113v7.build.sd_name=s113
-pinetime40.menu.softdevice.s113v7.build.sd_version=7.3.0
-pinetime40.menu.softdevice.s113v7.build.sd_fwid=0x0125
+#pinetime40.menu.softdevice.s140v6=S113 7.3.0 B
+#pinetime40.menu.softdevice.s140v6.build.sd_name=s113
+#pinetime40.menu.softdevice.s140v6.build.sd_version=7.3.0
+#pinetime40.menu.softdevice.s140v6.build.sd_fwid=0x0125
+
+#pinetime40.menu.softdevice.s113v7=S113 7.3.0
+#pinetime40.menu.softdevice.s113v7.build.sd_name=s113
+#pinetime40.menu.softdevice.s113v7.build.sd_version=7.3.0
+#pinetime40.menu.softdevice.s113v7.build.sd_fwid=0x0125
 
 #pinetime40.menu.softdevice.s140v7=S140 7.2.0
 #pinetime40.menu.softdevice.s140v7.build.sd_name=s140

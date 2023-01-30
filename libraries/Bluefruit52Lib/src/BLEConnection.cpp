@@ -174,7 +174,7 @@ bool BLEConnection::requestMtuExchange(uint16_t mtu)
   return true;
 }
 
-#if !defined (S112) || !defined (S113)
+#if !(defined S112) || !(defined S113)
 bool BLEConnection::requestDataLengthUpdate(ble_gap_data_length_params_t const *p_dl_params, ble_gap_data_length_limitation_t *p_dl_limitation)
 {
   VERIFY_STATUS(sd_ble_gap_data_length_update(_conn_hdl, p_dl_params, p_dl_limitation), false);
@@ -357,7 +357,7 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     break;
 
     //------------- Data Length -------------//
-#if !defined (S112) || !defined (S113)    
+#if !(defined S112) || !(defined S113)    
     case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
     {
       ble_gap_data_length_params_t* param = &evt->evt.gap_evt.params.data_length_update_request.peer_params;

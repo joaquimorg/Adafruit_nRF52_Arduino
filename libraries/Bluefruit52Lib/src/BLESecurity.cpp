@@ -240,7 +240,7 @@ bool BLESecurity::_authenticate(uint16_t conn_hdl)
 bool BLESecurity::_encrypt(uint16_t conn_hdl, bond_keys_t const* ltkey)
 {
   // LESC use own key, Legacy use peer key
-#if !defined (S112) || !defined (S113)  
+#if !(defined S112) || !(defined S113)  
   ble_gap_enc_key_t const* enc_key = ltkey->own_enc.enc_info.lesc ? &ltkey->own_enc : &ltkey->peer_enc;
   VERIFY_STATUS(sd_ble_gap_encrypt(conn_hdl, &enc_key->master_id, &enc_key->enc_info), false);
 #endif

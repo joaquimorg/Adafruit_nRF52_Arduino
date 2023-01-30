@@ -53,15 +53,15 @@ static int _external_flash_read(const struct lfs_config* c, lfs_block_t block, l
     if( size == 0 ) return 0;
     ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
     uint32_t addr = lba2addr(block) + off;
-    Serial.print("E R > ");
+    /*Serial.print("E R > ");
     Serial.print(block);
     Serial.print(" : ");
     Serial.print(off);
     Serial.print(" : ");
     Serial.print(size);
-    Serial.println("");
+    Serial.println("");*/
     eflash.readBuffer(addr, (uint8_t*)buffer, size);
-    eflash.dump_buf((uint8_t*)buffer, size);
+    //eflash.dump_buf((uint8_t*)buffer, size);
     return 0;
 }
 
@@ -73,15 +73,15 @@ static int _external_flash_prog(const struct lfs_config* c, lfs_block_t block, l
     //(void)c;
     ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
     uint32_t addr = lba2addr(block) + off;
-    Serial.print("E W > ");
+    /*Serial.print("E W > ");
     Serial.print(block);
     Serial.print(" : ");
     Serial.print(off);
     Serial.print(" : ");
     Serial.print(size);
-    Serial.println("");
+    Serial.println("");*/
     eflash.writeBuffer(addr, (const uint8_t*)buffer, size);
-    eflash.dump_buf((uint8_t*)buffer, size);
+    //eflash.dump_buf((uint8_t*)buffer, size);
     return 0;
 }
 
@@ -94,9 +94,9 @@ static int _external_flash_erase(const struct lfs_config* c, lfs_block_t block)
     //(void)c;
     ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
     uint32_t addr = lba2addr(block);
-    Serial.print("E E > ");
+    /*Serial.print("E E > ");
     Serial.print(block);
-    Serial.println("");
+    Serial.println("");*/
     eflash.eraseSector(addr);
     return 0;
 }

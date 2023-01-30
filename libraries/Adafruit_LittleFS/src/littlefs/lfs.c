@@ -5,7 +5,6 @@
  * Copyright (c) 2017, Arm Limited. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
 #include "lfs.h"
 #include "lfs_util.h"
 
@@ -51,9 +50,7 @@ static int lfs_bd_read(lfs_t *lfs,
             off+size > lfs->cfg->block_size) {
         return LFS_ERR_CORRUPT;
     }
-    //LFS_TRACE("read_size : rs %i : bc %i", lfs->cfg->read_size, lfs->cfg->block_size);
-    //LFS_DEBUG("hint %i : block %i : off %i", hint, block, off);
-    //LFS_TRACE("hint %i : block %i : off %i : size %i", hint, block, off, size);
+
     while (size > 0) {
         lfs_size_t diff = size;
 
@@ -90,12 +87,12 @@ static int lfs_bd_read(lfs_t *lfs,
             // rcache takes priority
             diff = lfs_min(diff, rcache->off-off);
         }
-        
+
         if (size >= hint && off % lfs->cfg->read_size == 0 &&
                 size >= lfs->cfg->read_size) {
             // bypass cache?
-            diff = lfs_aligndown(diff, lfs->cfg->read_size);            
-            int err = lfs->cfg->read(lfs->cfg, block, off, data, diff);            
+            diff = lfs_aligndown(diff, lfs->cfg->read_size);
+            int err = lfs->cfg->read(lfs->cfg, block, off, data, diff);
             if (err) {
                 return err;
             }
@@ -116,10 +113,8 @@ static int lfs_bd_read(lfs_t *lfs,
                     lfs->cfg->block_size)
                 - rcache->off,
                 lfs->cfg->cache_size);
-
         int err = lfs->cfg->read(lfs->cfg, rcache->block,
                 rcache->off, rcache->buffer, rcache->size);
-        
         LFS_ASSERT(err <= 0);
         if (err) {
             return err;
@@ -613,7 +608,7 @@ static lfs_stag_t lfs_dir_getslice(lfs_t *lfs, const lfs_mdir_t *dir,
     lfs_off_t off = dir->off;
     lfs_tag_t ntag = dir->etag;
     lfs_stag_t gdiff = 0;
-    LFS_TRACE("lfs_dir_getslice");
+
     if (lfs_gstate_hasmovehere(&lfs->gdisk, dir->pair) &&
             lfs_tag_id(gmask) != 0 &&
             lfs_tag_id(lfs->gdisk.tag) <= lfs_tag_id(gtag)) {
@@ -671,7 +666,6 @@ static lfs_stag_t lfs_dir_getslice(lfs_t *lfs, const lfs_mdir_t *dir,
 
 static lfs_stag_t lfs_dir_get(lfs_t *lfs, const lfs_mdir_t *dir,
         lfs_tag_t gmask, lfs_tag_t gtag, void *buffer) {
-            LFS_TRACE("lfs_dir_get");
     return lfs_dir_getslice(lfs, dir,
             gmask, gtag,
             0, buffer, lfs_tag_size(gtag));
@@ -1001,22 +995,22 @@ static lfs_stag_t lfs_dir_fetchmatch(lfs_t *lfs,
     // we can find tag very efficiently during a fetch, since we're already
     // scanning the entire directory
     lfs_stag_t besttag = -1;
-    
+
     // if either block address is invalid we return LFS_ERR_CORRUPT here,
     // otherwise later writes to the pair could fail
     if (pair[0] >= lfs->cfg->block_count || pair[1] >= lfs->cfg->block_count) {
         return LFS_ERR_CORRUPT;
     }
+
     // find the block with the most recent revision
     uint32_t revs[2] = {0, 0};
     int r = 0;
     for (int i = 0; i < 2; i++) {
-        //LFS_TRACE("rs %i : bc %i", lfs->cfg->read_size, lfs->cfg->block_size);
         int err = lfs_bd_read(lfs,
                 NULL, &lfs->rcache, sizeof(revs[i]),
                 pair[i], 0, &revs[i], sizeof(revs[i]));
         revs[i] = lfs_fromle32(revs[i]);
-        if (err && err != LFS_ERR_CORRUPT) {            
+        if (err && err != LFS_ERR_CORRUPT) {
             return err;
         }
 
@@ -1025,15 +1019,17 @@ static lfs_stag_t lfs_dir_fetchmatch(lfs_t *lfs,
             r = i;
         }
     }
+
     dir->pair[0] = pair[(r+0)%2];
     dir->pair[1] = pair[(r+1)%2];
     dir->rev = revs[(r+0)%2];
     dir->off = 0; // nonzero = found some commits
-    
+
     // now scan tags to fetch the actual dir and find possible match
     for (int i = 0; i < 2; i++) {
         lfs_off_t off = 0;
         lfs_tag_t ptag = 0xffffffff;
+
         uint16_t tempcount = 0;
         lfs_block_t temptail[2] = {LFS_BLOCK_NULL, LFS_BLOCK_NULL};
         bool tempsplit = false;
@@ -1042,6 +1038,7 @@ static lfs_stag_t lfs_dir_fetchmatch(lfs_t *lfs,
         dir->rev = lfs_tole32(dir->rev);
         uint32_t crc = lfs_crc(0xffffffff, &dir->rev, sizeof(dir->rev));
         dir->rev = lfs_fromle32(dir->rev);
+
         while (true) {
             // extract next tag
             lfs_tag_t tag;
@@ -1060,6 +1057,7 @@ static lfs_stag_t lfs_dir_fetchmatch(lfs_t *lfs,
 
             crc = lfs_crc(crc, &tag, sizeof(tag));
             tag = lfs_frombe32(tag) ^ ptag;
+
             // next commit not yet programmed or we're not in valid range
             if (!lfs_tag_isvalid(tag)) {
                 dir->erased = (lfs_tag_type1(ptag) == LFS_TYPE_CRC &&
@@ -1069,6 +1067,7 @@ static lfs_stag_t lfs_dir_fetchmatch(lfs_t *lfs,
                 dir->erased = false;
                 break;
             }
+
             ptag = tag;
 
             if (lfs_tag_type1(tag) == LFS_TYPE_CRC) {
@@ -1090,7 +1089,7 @@ static lfs_stag_t lfs_dir_fetchmatch(lfs_t *lfs,
                     dir->erased = false;
                     break;
                 }
-                
+
                 // reset the next bit if we need to
                 ptag ^= (lfs_tag_t)(lfs_tag_chunk(tag) & 1U) << 31;
 
@@ -1190,7 +1189,7 @@ static lfs_stag_t lfs_dir_fetchmatch(lfs_t *lfs,
                 }
             }
         }
-        
+
         // consider what we have good enough
         if (dir->off > 0) {
             // synthetic move
@@ -1255,7 +1254,6 @@ static int lfs_dir_getgstate(lfs_t *lfs, const lfs_mdir_t *dir,
 
 static int lfs_dir_getinfo(lfs_t *lfs, lfs_mdir_t *dir,
         uint16_t id, struct lfs_info *info) {
-    LFS_TRACE("lfs_dir_getinfo");
     if (id == 0x3ff) {
         // special case for root
         strcpy(info->name, "/");
@@ -1320,16 +1318,12 @@ static int lfs_dir_find_match(void *data,
 
 static lfs_stag_t lfs_dir_find(lfs_t *lfs, lfs_mdir_t *dir,
         const char **path, uint16_t *id) {
-
-    LFS_TRACE("lfs_dir_find(%p, \"%s\")", (void*)lfs, *path);
-    //LFS_TRACE("rs %i : bc %i", lfs->cfg->read_size, lfs->cfg->block_size);
-
-    // we reduce path to a single name if we can find it    
+    // we reduce path to a single name if we can find it
     const char *name = *path;
     if (id) {
         *id = 0x3ff;
     }
-    //LFS_TRACE("name : %s", name);
+
     // default to root dir
     lfs_stag_t tag = LFS_MKTAG(LFS_TYPE_DIR, 0x3ff, 0);
     dir->tail[0] = lfs->root[0];
@@ -1337,11 +1331,10 @@ static lfs_stag_t lfs_dir_find(lfs_t *lfs, lfs_mdir_t *dir,
 
     while (true) {
 nextname:
-        //LFS_TRACE("rs %i : bc %i", lfs->cfg->read_size, lfs->cfg->block_size);
         // skip slashes
         name += strspn(name, "/");
         lfs_size_t namelen = strcspn(name, "/");
-        //LFS_TRACE("name : %s", name);
+
         // skip '.' and root '..'
         if ((namelen == 1 && memcmp(name, ".", 1) == 0) ||
             (namelen == 2 && memcmp(name, "..", 2) == 0)) {
@@ -1372,6 +1365,7 @@ nextname:
 
             suffix += sufflen;
         }
+
         // found path
         if (name[0] == '\0') {
             return tag;
@@ -1379,22 +1373,23 @@ nextname:
 
         // update what we've found so far
         *path = name;
+
         // only continue if we hit a directory
         if (lfs_tag_type3(tag) != LFS_TYPE_DIR) {
             return LFS_ERR_NOTDIR;
-        }       
+        }
+
         // grab the entry data
-        //LFS_TRACE("rs %i : bc %i", lfs->cfg->read_size, lfs->cfg->block_size);
         if (lfs_tag_id(tag) != 0x3ff) {
             lfs_stag_t res = lfs_dir_get(lfs, dir, LFS_MKTAG(0x700, 0x3ff, 0),
                     LFS_MKTAG(LFS_TYPE_STRUCT, lfs_tag_id(tag), 8), dir->tail);
-            if (res < 0) {;
+            if (res < 0) {
                 return res;
             }
             lfs_pair_fromle32(dir->tail);
         }
+
         // find entry matching name
-        //LFS_TRACE("rs %i : bc %i", lfs->cfg->read_size, lfs->cfg->block_size);
         while (true) {
             tag = lfs_dir_fetchmatch(lfs, dir, dir->tail,
                     LFS_MKTAG(0x780, 0, 0),
@@ -1406,13 +1401,16 @@ nextname:
             if (tag < 0) {
                 return tag;
             }
+
             if (tag) {
                 break;
             }
+
             if (!dir->split) {
                 return LFS_ERR_NOENT;
             }
         }
+
         // to next name
         name += namelen;
     }
@@ -3604,13 +3602,11 @@ static lfs_soff_t lfs_file_rawsize(lfs_t *lfs, lfs_file_t *file) {
 /// General fs operations ///
 static int lfs_rawstat(lfs_t *lfs, const char *path, struct lfs_info *info) {
     lfs_mdir_t cwd;
-    LFS_TRACE("lfs_rawstat(%p, \"%s\", %p)", (void*)lfs, path, (void*)info);
     lfs_stag_t tag = lfs_dir_find(lfs, &cwd, &path, NULL);
-    LFS_TRACE("lfs_rawstat 1");
     if (tag < 0) {
         return (int)tag;
     }
-    LFS_TRACE("lfs_rawstat 2");
+
     return lfs_dir_getinfo(lfs, &cwd, lfs_tag_id(tag), info);
 }
 
@@ -5413,7 +5409,9 @@ int lfs_stat(lfs_t *lfs, const char *path, struct lfs_info *info) {
         return err;
     }
     LFS_TRACE("lfs_stat(%p, \"%s\", %p)", (void*)lfs, path, (void*)info);
+
     err = lfs_rawstat(lfs, path, info);
+
     LFS_TRACE("lfs_stat -> %d", err);
     LFS_UNLOCK(lfs->cfg);
     return err;
@@ -5660,15 +5658,12 @@ int lfs_mkdir(lfs_t *lfs, const char *path) {
     if (err) {
         return err;
     }
-    //LFS_TRACE("rs %i : bc %i", lfs->cfg->read_size, lfs->cfg->block_size);
     LFS_TRACE("lfs_mkdir(%p, \"%s\")", (void*)lfs, path);
 
     err = lfs_rawmkdir(lfs, path);
 
     LFS_TRACE("lfs_mkdir -> %d", err);
-    
     LFS_UNLOCK(lfs->cfg);
-    //LFS_TRACE("rs %i : bc %i", lfs->cfg->read_size, lfs->cfg->block_size);
     return err;
 }
 #endif
