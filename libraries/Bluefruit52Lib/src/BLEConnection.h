@@ -96,7 +96,7 @@ class BLEConnection
 
     bool setTxPower(int8_t power); // set power for this connection
 
-#if !defined(S112) || !defined(S113)
+#if !defined (S112) || !defined (S113)
     bool requestDataLengthUpdate(ble_gap_data_length_params_t const *p_dl_params = NULL, ble_gap_data_length_limitation_t *p_dl_limitation = NULL);   
 #endif
     bool requestMtuExchange(uint16_t mtu);
