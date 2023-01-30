@@ -79,7 +79,7 @@ static int _internal_flash_prog(const struct lfs_config* c, lfs_block_t block, l
   Serial.println("");*/
   VERIFY(flash_nrf5x_write(addr, buffer, size), -1)
 
-    return 0;
+  return 0;
 }
 
 // Erase a block. A block must be erased before being programmed.

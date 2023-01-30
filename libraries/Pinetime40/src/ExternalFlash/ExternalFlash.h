@@ -4,6 +4,8 @@
 #include "Adafruit_LittleFS.h"
 //#include "Adafruit_SPIFlash.h"
 
+using namespace Adafruit_LittleFS_Namespace;
+
 class ExternalFlash: public Adafruit_LittleFS
 {
 public:
@@ -11,7 +13,6 @@ public:
 
     // overwrite to also perform low level format (sector erase of whole flash region)
     bool begin(void);
-    void dump_sector(uint32_t sector, uint32_t off);
     void dump_buf(uint8_t* buf, uint16_t size);
     uint8_t readStatus(void);
     uint8_t readStatus2(void);

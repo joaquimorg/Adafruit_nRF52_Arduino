@@ -2,6 +2,8 @@
 #include "ExternalFlash.h"
 #include "nrf52_qspi.h"
 
+//#define SHOW_DEBUG
+
 enum {
     SFLASH_CMD_READ = 0x03,      // Single Read
     SFLASH_CMD_FAST_READ = 0x0B, // Fast Read
@@ -37,31 +39,59 @@ enum {
     SFLASH_BLOCK_SIZE = 64 * 1024UL,
     SFLASH_SECTOR_SIZE = 4 * 1024,
     SFLASH_PAGE_SIZE = 256,
-    SFLASH_START = 1024,
+    SFLASH_START = 4096,
 };
 
 #define LFS_FLASH_TOTAL_SIZE  0x3FF000
 
+void dump_buffer(uint8_t* buf, uint16_t size)
+{
+
+    for (uint32_t row = 0; row < size / 16; row++)
+    {
+        if (row == 0) Serial.print("0");
+        if (row < 16) Serial.print("0");
+        Serial.print(row * 16, HEX);
+        Serial.print(" : ");
+
+        for (uint32_t col = 0; col < 16; col++)
+        {
+            uint8_t val = buf[row * 16 + col];
+
+            if (val < 16) Serial.print("0");
+            Serial.print(val, HEX);
+
+            Serial.print(" ");
+        }
+
+        Serial.println();
+    }
+}
+
 static inline uint32_t lba2addr(uint32_t block)
 {
-    return SFLASH_START + (block * SFLASH_PAGE_SIZE);
+    return SFLASH_START + (block * SFLASH_SECTOR_SIZE);
 }
 
 static int _external_flash_read(const struct lfs_config* c, lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size)
 {
-    //(void)c;
-    if( size == 0 ) return 0;
-    ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
+    (void)c;
+    if (size == 0) return 0;
+    //ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
     uint32_t addr = lba2addr(block) + off;
-    /*Serial.print("E R > ");
+    //eflash.readBuffer(addr, (uint8_t*)buffer, size);    
+    nrf52_qspi_read_write_memory(true, addr, (uint8_t*)buffer, size);
+
+#ifdef SHOW_DEBUG    
+    Serial.print("E R > ");
     Serial.print(block);
     Serial.print(" : ");
     Serial.print(off);
     Serial.print(" : ");
     Serial.print(size);
-    Serial.println("");*/
-    eflash.readBuffer(addr, (uint8_t*)buffer, size);
-    //eflash.dump_buf((uint8_t*)buffer, size);
+    Serial.println("");
+    dump_buffer((uint8_t*)buffer, size);
+#endif
     return 0;
 }
 
@@ -70,18 +100,21 @@ static int _external_flash_read(const struct lfs_config* c, lfs_block_t block, l
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int _external_flash_prog(const struct lfs_config* c, lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size)
 {
-    //(void)c;
-    ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
+    (void)c;
+    //ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
     uint32_t addr = lba2addr(block) + off;
-    /*Serial.print("E W > ");
+    //eflash.writeBuffer(addr, (const uint8_t*)buffer, size);
+    nrf52_qspi_read_write_memory(false, addr, (uint8_t*)buffer, size);    
+#ifdef SHOW_DEBUG        
+    Serial.print("E W > ");
     Serial.print(block);
     Serial.print(" : ");
     Serial.print(off);
     Serial.print(" : ");
     Serial.print(size);
-    Serial.println("");*/
-    eflash.writeBuffer(addr, (const uint8_t*)buffer, size);
-    //eflash.dump_buf((uint8_t*)buffer, size);
+    Serial.println("");
+    dump_buffer((uint8_t*)buffer, size);
+#endif    
     return 0;
 }
 
@@ -91,13 +124,16 @@ static int _external_flash_prog(const struct lfs_config* c, lfs_block_t block, l
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int _external_flash_erase(const struct lfs_config* c, lfs_block_t block)
 {
-    //(void)c;
-    ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
+    (void)c;
+    //ExternalFlash& eflash = *(static_cast<ExternalFlash*>(c->context));
     uint32_t addr = lba2addr(block);
-    /*Serial.print("E E > ");
+#ifdef SHOW_DEBUG     
+    Serial.print("E E > ");
     Serial.print(block);
-    Serial.println("");*/
-    eflash.eraseSector(addr);
+    Serial.println("");
+#endif    
+    //eflash.eraseSector(addr);
+    nrf52_qspi_erase_command(SFLASH_CMD_ERASE_SECTOR, addr * SFLASH_SECTOR_SIZE);
     return 0;
 }
 
@@ -109,6 +145,26 @@ static int _external_flash_sync(const struct lfs_config* c)
     //eflash.spiFlash.syncDevice();
     return 0;
 }
+
+static struct lfs_config _ExternalFSConfig =
+{
+    .context = NULL,
+
+    .read = _external_flash_read,
+    .prog = _external_flash_prog,
+    .erase = _external_flash_erase,
+    .sync = _external_flash_sync,
+
+    .read_size = 128,
+    .prog_size = 128,
+    .block_size = SFLASH_SECTOR_SIZE,
+    .block_count = LFS_FLASH_TOTAL_SIZE / SFLASH_SECTOR_SIZE,
+    .block_cycles = 5000,
+    .cache_size = 128,
+    .lookahead_size = 128,
+    .name_max = 50,
+    .attr_max = 50,
+};
 
 ExternalFlash ExternalFS;
 
@@ -132,42 +188,8 @@ const int flashDevices = 1;
 */
 
 ExternalFlash::ExternalFlash(void)
-    : Adafruit_LittleFS()
+    : Adafruit_LittleFS(&_ExternalFSConfig)
 {
-    //spiFlash = Adafruit_SPIFlash(&flashTransport);
-}
-
-void ExternalFlash::dump_sector(uint32_t sector, uint32_t off)
-{
-    uint8_t buf[256];
-    memset(buf, 0xff, sizeof(buf));
-
-    Serial.print("External ");
-    Serial.print(sector);
-    Serial.print(" : ");
-    Serial.println(off);
-
-    //spiFlash.readBuffer((sector * SFLASH_PAGE_SIZE) + off, buf, 256);
-
-    for (uint32_t row = 0; row < sizeof(buf) / 16; row++)
-    {
-        if (row == 0) Serial.print("0");
-        if (row < 16) Serial.print("0");
-        Serial.print(row * 16, HEX);
-        Serial.print(" : ");
-
-        for (uint32_t col = 0; col < 16; col++)
-        {
-            uint8_t val = buf[row * 16 + col];
-
-            if (val < 16) Serial.print("0");
-            Serial.print(val, HEX);
-
-            Serial.print(" ");
-        }
-
-        Serial.println();
-    }
 }
 
 void ExternalFlash::dump_buf(uint8_t* buf, uint16_t size)
@@ -262,7 +284,7 @@ uint32_t ExternalFlash::writeBuffer(uint32_t address, uint8_t const* buffer, uin
             SFLASH_PAGE_SIZE - (address & (SFLASH_PAGE_SIZE - 1));
         uint32_t const toWrite = min(remain, leftOnPage);
 
-        if (!nrf52_qspi_read_write_memory(false, address, (uint8_t *)buffer, toWrite))
+        if (!nrf52_qspi_read_write_memory(false, address, (uint8_t*)buffer, toWrite))
             break;
 
         remain -= toWrite;
@@ -278,7 +300,7 @@ uint32_t ExternalFlash::writeBuffer(uint32_t address, uint8_t const* buffer, uin
 
 bool ExternalFlash::begin(void)
 {
-    lfs_config lcfg = {
+    /*lfs_config lcfg = {
         .context = this,
 
         .read = _external_flash_read,
@@ -295,25 +317,18 @@ bool ExternalFlash::begin(void)
         .lookahead_size = 256,
         .name_max = 50,
         .attr_max = 50,
-    };
+    };*/
 
     Serial.println("Serial Flash Info : ");
-    //spiFlash.begin(my_flash_devices, flashDevices);
+
     nrf52_qspi_begin();
 
     uint8_t jedec_ids[4];
     nrf52_qspi_read_command(SFLASH_CMD_READ_JEDEC_ID, jedec_ids, 4);
 
     Serial.printf("JEDEC ID: %02X %02X %02X %02X\n", jedec_ids[0], jedec_ids[1], jedec_ids[2], jedec_ids[3]);
-    /*Serial.print(jedec_ids[0], HEX);
-    Serial.print(jedec_ids[1], HEX);
-    Serial.print(jedec_ids[2], HEX);
-    Serial.print(jedec_ids[3], HEX);*/
+
     Serial.println("");
-    //Serial.print("Flash size: ");
-    //Serial.print(spiFlash.size() / 1024);
-    //Serial.println(" KB");
-    //Serial.println("");
 
     // The write in progress bit should be low.
     while (readStatus() & 0x01) {}
@@ -332,7 +347,7 @@ bool ExternalFlash::begin(void)
     // Check the quad enable bit.
     if ((status & 0x02) == 0) {
         writeEnable();
-        uint8_t full_status[2] = {0x00, 0x02};
+        uint8_t full_status[2] = { 0x00, 0x02 };
         nrf52_qspi_write_command(SFLASH_CMD_WRITE_STATUS, full_status, 2);
     }
 
@@ -368,7 +383,7 @@ bool ExternalFlash::begin(void)
 
     //return false;
     // failed to mount, erase all sector then format and mount again
-    if (!Adafruit_LittleFS::begin(&lcfg))
+    if (!Adafruit_LittleFS::begin())
     {
         Serial.println("Erasing External chip!");
         if (!eraseChip()) {
@@ -383,8 +398,9 @@ bool ExternalFlash::begin(void)
         this->format();
 
         // mount again if still failed, give up
-        if (!Adafruit_LittleFS::begin(&lcfg)) return false;
+        if (!Adafruit_LittleFS::begin()) return false;
     }
     Serial.println("External FS ready !");
+
     return true;
 }
