@@ -38,18 +38,18 @@ const uint32_t g_ADigitalPinMap[] =
 
 void initVariant()
 {
-  pinMode( 2, OUTPUT);
-  digitalWrite( 2, HIGH);
+  pinMode(PIN_VIBRATOR_CTRL, OUTPUT);
+  digitalWrite(PIN_VIBRATOR_CTRL, HIGH);
 
-  pinMode(10, OUTPUT);
-  digitalWrite(10, HIGH);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
 
-  pinMode(16, OUTPUT);
+  pinMode(PIN_TP_RST, OUTPUT);
 
-  pinMode( 0, INPUT);
-  pinMode( 1, INPUT);
-  pinMode(11, INPUT);
-  pinMode(12, INPUT);
-  pinMode(17, INPUT);
+  pinMode(PIN_A0, INPUT);
+  pinMode(PIN_CHARGE_IRQ, INPUT);
+  pinMode(PIN_KEY_ACTION, INPUT);
+  pinMode(PIN_BMA421_IRQ, INPUT);
+  pinMode(PIN_TP_IRQ, INPUT);
 }
 

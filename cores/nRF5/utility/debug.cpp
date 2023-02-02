@@ -264,12 +264,13 @@ void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
   PRINTF("\n};\n");
 }
 
-
+#include "ble.h"
+#include "ble_hci.h"
 
 #if CFG_DEBUG
 
-#include "ble.h"
-#include "ble_hci.h"
+//#include "ble.h"
+//#include "ble_hci.h"
 
 /*------------------------------------------------------------------*/
 /* BLE Event String
@@ -438,7 +439,7 @@ const char* dbg_err_str(int32_t err_id)
 
   return str;
 }
-
+#endif
 //--------------------------------------------------------------------+
 // HCI STATUS
 //--------------------------------------------------------------------+
@@ -486,6 +487,6 @@ const char* dbg_hci_str(uint8_t id)
   return (const char *) lookup_find(&_strhci_table, id);
 }
 
-#endif
+//#endif
 
 }

@@ -24,11 +24,13 @@ void Touch::init(void) {
     digitalWrite(PIN_TP_RST, HIGH);
     delay_ns(5);
 
+    Serial.println(">>Touch read config");
     user_i2c_read(TP_TWI_ADDR, 0x15, &version15, 1);
     delay_ns(5);
     user_i2c_read(TP_TWI_ADDR, 0xA7, versionInfo, 3);
     delay_ns(5);
-
+    Serial.printf(">>Touch ID: %02X - %02X %02X %02X\n", version15, versionInfo[0], versionInfo[1], versionInfo[2]);
+    
     /*
     [2] EnConLR - Continuous operation can slide around
     [1] EnConUD - Slide up and down to enable continuous operation

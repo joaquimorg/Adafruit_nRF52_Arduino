@@ -25,6 +25,7 @@ extern "C" {
 }
 
 #include <Arduino.h>
+#include "nrf.h"
 #include <wiring_private.h>
 
 #include "Wire.h"
@@ -35,6 +36,62 @@ static volatile uint32_t* pincfg_reg(uint32_t pin)
 {
   NRF_GPIO_Type * port = nrf_gpio_pin_port_decode(&pin);
   return &port->PIN_CNF[pin];
+}
+
+static void twi_clear_bus(uint8_t uc_pinSDA, uint8_t uc_pinSCL)
+{
+
+    *pincfg_reg(uc_pinSCL) = ((uint32_t)GPIO_PIN_CNF_DIR_Input         << GPIO_PIN_CNF_DIR_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect    << GPIO_PIN_CNF_INPUT_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup      << GPIO_PIN_CNF_PULL_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1       << GPIO_PIN_CNF_DRIVE_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
+
+    *pincfg_reg(uc_pinSDA) = ((uint32_t)GPIO_PIN_CNF_DIR_Input         << GPIO_PIN_CNF_DIR_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect    << GPIO_PIN_CNF_INPUT_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup      << GPIO_PIN_CNF_PULL_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1       << GPIO_PIN_CNF_DRIVE_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
+
+
+    nrf_gpio_pin_set(uc_pinSCL);
+    nrf_gpio_pin_set(uc_pinSDA);
+
+    *pincfg_reg(uc_pinSCL) = ((uint32_t)GPIO_PIN_CNF_DIR_Output       << GPIO_PIN_CNF_DIR_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect    << GPIO_PIN_CNF_INPUT_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup      << GPIO_PIN_CNF_PULL_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1       << GPIO_PIN_CNF_DRIVE_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
+
+    *pincfg_reg(uc_pinSDA) = ((uint32_t)GPIO_PIN_CNF_DIR_Output       << GPIO_PIN_CNF_DIR_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect    << GPIO_PIN_CNF_INPUT_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup      << GPIO_PIN_CNF_PULL_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1       << GPIO_PIN_CNF_DRIVE_Pos)
+                           | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
+
+    delayMicroseconds(4);
+
+    for (int i = 0; i < 9; i++)
+    {
+        if (nrf_gpio_pin_read(uc_pinSDA))
+        {
+            if (i == 0)
+            {
+                return;
+            }
+            else
+            {
+                break;
+            }
+        }
+        nrf_gpio_pin_clear(uc_pinSCL);
+        delayMicroseconds(4);
+        nrf_gpio_pin_set(uc_pinSCL);
+        delayMicroseconds(4);
+    }
+    nrf_gpio_pin_clear(uc_pinSDA);
+    delayMicroseconds(4);
+    nrf_gpio_pin_set(uc_pinSDA);
 }
 
 TwoWire::TwoWire(NRF_TWIM_Type * p_twim, NRF_TWIS_Type * p_twis, IRQn_Type IRQn, uint8_t pinSDA, uint8_t pinSCL)
@@ -51,6 +108,10 @@ void TwoWire::begin(void) {
   //Main Mode
   master = true;
 
+  Serial.println(">> TwoWire clean");
+  twi_clear_bus(_uc_pinSDA, _uc_pinSCL);
+
+  Serial.println(">> TwoWire config");
   *pincfg_reg(_uc_pinSCL) = ((uint32_t)GPIO_PIN_CNF_DIR_Input         << GPIO_PIN_CNF_DIR_Pos)
                            | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect    << GPIO_PIN_CNF_INPUT_Pos)
                            | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup      << GPIO_PIN_CNF_PULL_Pos)
@@ -63,11 +124,16 @@ void TwoWire::begin(void) {
                            | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1       << GPIO_PIN_CNF_DRIVE_Pos)
                            | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos);
 
+  _p_twim->ENABLE = (TWIM_ENABLE_ENABLE_Disabled << TWIM_ENABLE_ENABLE_Pos);
+  *(volatile uint32_t *)0x40003FFC = 0;
+  *(volatile uint32_t *)0x40003FFC;
+  *(volatile uint32_t *)0x40003FFC = 1;
   _p_twim->FREQUENCY = TWIM_FREQUENCY_FREQUENCY_K100;
   _p_twim->ENABLE = (TWIM_ENABLE_ENABLE_Enabled << TWIM_ENABLE_ENABLE_Pos);
   _p_twim->PSEL.SCL = _uc_pinSCL;
   _p_twim->PSEL.SDA = _uc_pinSDA;
 
+  Serial.println(">> TwoWire IRQ config");  
   NVIC_ClearPendingIRQ(_IRQn);
   NVIC_SetPriority(_IRQn, 3);
   NVIC_EnableIRQ(_IRQn);
