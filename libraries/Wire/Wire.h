@@ -94,8 +94,11 @@ class TwoWire : public Stream
     void (*onRequestCallback)(void);
     void (*onReceiveCallback)(int);
 
+    void FixHwFreezed();
+
     // TWI clock frequency
     static const uint32_t TWI_CLOCK = 100000;
+    static const uint32_t HwFreezedDelay = 161000;
 };
 
 #if WIRE_INTERFACES_COUNT > 0

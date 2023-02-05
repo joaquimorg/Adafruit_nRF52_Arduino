@@ -37,6 +37,8 @@ class Touch
 
     void cleanGesture(void) { gesture = Gestures::None; }
 
+    void read_config(void);
+
   protected:
 
     byte data_raw[11];

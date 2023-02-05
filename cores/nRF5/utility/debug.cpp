@@ -60,7 +60,11 @@ extern "C"
 void HardFault_Handler(void)
 {
   // reset on hardfault
-  NVIC_SystemReset();
+  Serial.println("HardFault_Handler");
+  dbgMemInfo();
+  while (!Serial) delay(10);
+  while (true) delay(10);
+  //NVIC_SystemReset();
 }
 
 int dbgHeapTotal(void)

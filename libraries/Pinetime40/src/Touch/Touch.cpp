@@ -1,6 +1,6 @@
 #include "Touch.h"
 #include "Arduino.h"
-#include "i2c.h"
+#include "I2C/i2c.h"
 
 #define TP_TWI_ADDR     0x15
 
@@ -13,24 +13,23 @@ Touch::Touch(void) {
 
 void Touch::init(void) {
 
-    init_i2c();
-
     pinMode(PIN_TP_RST, OUTPUT);
 
-    digitalWrite(PIN_TP_RST, HIGH);
-    delay_ns(5);
+    Serial.println("Touch reset");
     digitalWrite(PIN_TP_RST, LOW);
     delay_ns(5);
     digitalWrite(PIN_TP_RST, HIGH);
-    delay_ns(5);
+    delay_ns(50);
 
-    Serial.println(">>Touch read config");
+    Serial.println("Touch init read");
+    //user_i2c_read(TP_TWI_ADDR, 0x00, &version15, 1);
+    //delay_ns(5);
     user_i2c_read(TP_TWI_ADDR, 0x15, &version15, 1);
     delay_ns(5);
-    user_i2c_read(TP_TWI_ADDR, 0xA7, versionInfo, 3);
+    user_i2c_read(TP_TWI_ADDR, 0xA7, &version15, 1);
     delay_ns(5);
-    Serial.printf(">>Touch ID: %02X - %02X %02X %02X\n", version15, versionInfo[0], versionInfo[1], versionInfo[2]);
-    
+
+    read_config();
     /*
     [2] EnConLR - Continuous operation can slide around
     [1] EnConUD - Slide up and down to enable continuous operation
@@ -38,7 +37,7 @@ void Touch::init(void) {
     */
     const uint8_t motionMask = 0b00000001;
     user_i2c_write(TP_TWI_ADDR, 0xEC, &motionMask, 1);
-    delay_ns(15);
+    delay_ns(25);
     /*
     [7] EnTest interrupt pin test, and automatically send out low pulse periodically after being enabled.
     [6] When EnTouch detects a touch, it periodically sends out low pulses.
@@ -51,9 +50,23 @@ void Touch::init(void) {
     //delay_ns(15);
 
     //user_i2c_read(TP_TWI_ADDR, 0xEC, &version15, 1);
-    //delay_ns(5);
+    //delay_ns(25);
+
 }
 
+void Touch::read_config(void) {
+    Serial.println(">>Touch read config");
+    user_i2c_read(TP_TWI_ADDR, 0x15, &version15, 1);
+    delay_ns(25);
+    user_i2c_read(TP_TWI_ADDR, 0xA7, &versionInfo[0], 1);
+    delay_ns(25);
+    user_i2c_read(TP_TWI_ADDR, 0xA8, &versionInfo[1], 1);
+    delay_ns(25);
+    user_i2c_read(TP_TWI_ADDR, 0xA9, &versionInfo[2], 1);
+    delay_ns(25);
+    Serial.printf(">>Touch ID: %02X - %02X %02X %02X\n", version15, versionInfo[0], versionInfo[1], versionInfo[2]);
+
+}
 
 void Touch::sleep(bool state) {
     digitalWrite(PIN_TP_RST, LOW);
@@ -89,7 +102,7 @@ void Touch::get(void) {
 
 
 Touch::Gestures Touch::readGesture(void) {
-    
+
     byte raw[1];
 
     user_i2c_read(TP_TWI_ADDR, 0x01, raw, 1);
