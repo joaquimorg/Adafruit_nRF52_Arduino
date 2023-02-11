@@ -282,3 +282,16 @@ void draw_buffer(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t* data) 
     write_command(ST7789_RAMWR);
     write_buffer(data, (w * h) * 2);
 }
+
+
+void displaySleep(void) {    
+    write_command(ST7789_SLPIN);
+    write_command(ST7789_DISPOFF);    
+    //digitalWrite(LCD_CSN, LOW);
+    //digitalWrite(LCD_DC, LOW);
+}
+
+void displayWakeUp(void) {
+    write_command(ST7789_DISPON);
+    write_command(ST7789_SLPOUT);
+}

@@ -10,4 +10,7 @@ void set_addr_display(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 void draw_buffer(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t *data);
 void swapBytes(uint16_t *buffer, int size);
 
+void displaySleep(void);
+void displayWakeUp(void);
+
 #endif /* DISPLAY_H */

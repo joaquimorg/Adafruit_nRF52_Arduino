@@ -53,9 +53,9 @@ static void twi_clear_bus(uint8_t uc_pinSDA, uint8_t uc_pinSCL)
     | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1 << GPIO_PIN_CNF_DRIVE_Pos)
     | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
 
-
-  nrf_gpio_pin_set(uc_pinSCL);
-  nrf_gpio_pin_set(uc_pinSDA);
+  delayMicroseconds(4);
+  //nrf_gpio_pin_set(uc_pinSCL);
+  //nrf_gpio_pin_set(uc_pinSDA);
 
   *pincfg_reg(uc_pinSCL) = ((uint32_t)GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos)
     | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)

@@ -15,13 +15,13 @@ void Touch::init(void) {
 
     pinMode(PIN_TP_RST, OUTPUT);
 
-    Serial.println("Touch reset");
+    Serial.println(">> Touch reset");
     digitalWrite(PIN_TP_RST, LOW);
     delay_ns(5);
     digitalWrite(PIN_TP_RST, HIGH);
     delay_ns(50);
 
-    Serial.println("Touch init read");
+    Serial.println(">> Touch init read");
     //user_i2c_read(TP_TWI_ADDR, 0x00, &version15, 1);
     //delay_ns(5);
     user_i2c_read(TP_TWI_ADDR, 0x15, &version15, 1);
@@ -55,7 +55,7 @@ void Touch::init(void) {
 }
 
 void Touch::read_config(void) {
-    Serial.println(">>Touch read config");
+    Serial.println(">> Touch read config");
     user_i2c_read(TP_TWI_ADDR, 0x15, &version15, 1);
     delay_ns(25);
     user_i2c_read(TP_TWI_ADDR, 0xA7, &versionInfo[0], 1);
@@ -64,7 +64,7 @@ void Touch::read_config(void) {
     delay_ns(25);
     user_i2c_read(TP_TWI_ADDR, 0xA9, &versionInfo[2], 1);
     delay_ns(25);
-    Serial.printf(">>Touch ID: %02X - %02X %02X %02X\n", version15, versionInfo[0], versionInfo[1], versionInfo[2]);
+    Serial.printf(">> Touch ID: %02X - %02X %02X %02X\n", version15, versionInfo[0], versionInfo[1], versionInfo[2]);
 
 }
 
