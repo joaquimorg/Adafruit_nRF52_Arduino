@@ -2,7 +2,45 @@
 #include "Arduino.h"
 #include "I2C/i2c.h"
 
-#define TP_TWI_ADDR     0x15
+#define TP_TWI_ADDR                     0x15
+
+#define CST816_CHIP_ID			        0xB4
+
+#define CST816_REG_GESTURE				0x01
+#define CST816_REG_FINGER_NUM			0x02
+#define CST816_REG_XPOS_H				0x03
+#define CST816_REG_XPOS_L				0x04
+#define CST816_REG_YPOS_H				0x05
+#define CST816_REG_YPOS_L				0x06
+#define CST816_REG_BPC0_H				0xB0
+#define CST816_REG_BPC0_L				0xB1
+#define CST816_REG_BPC1_H				0xB2
+#define CST816_REG_BPC1_L				0xB3
+#define CST816_REG_CHIPID				0xA7
+#define CST816_REG_PROJID				0xA8
+#define CST816_REG_FW_VER				0xA9
+#define CST816_REG_SLEEP_MODE			0xE5
+#define CST816_REG_ERR_RESET			0xEA
+#define CST816_REG_LONG_PRESS_TICK		0xEB
+#define CST816_REG_MOTION_MASK			0xEC
+#define CST816_REG_IRQ_PLUSE_WIDTH		0xED
+#define CST816_REG_NOR_SCAN_PER			0xEE
+#define CST816_REG_MOTION_SL_ANGLE		0xEF
+#define CST816_REG_LP_SCAN_RAW1_H		0xF0
+#define CST816_REG_LP_SCAN_RAW1_L		0xF1
+#define CST816_REG_LP_SCAN_RAW2_H		0xF2
+#define CST816_REG_LP_SCAN_RAW2_L		0xF3
+#define CST816_REG_LP_AUTO_WAKE_TIME	0xF4
+#define CST816_REG_LP_SCAN_TH			0xF5
+#define CST816_REG_LP_SCAN_WIN			0xF6
+#define CST816_REG_LP_SCAN_FREQ			0xF7
+#define CST816_REG_LP_SCAN_IDAC			0xF8
+#define CST816_REG_AUTO_SLEEP_TIME		0xF9
+#define CST816_REG_IRQ_CTL				0xFA
+#define CST816_REG_AUTO_RESET			0xFB
+#define CST816_REG_LONG_PRESS_TIME		0xFC
+#define CST816_REG_IO_CTL				0xFD
+#define CST816_REG_DIS_AUTO_SLEEP		0xFE
 
 /**
  * Constructor
@@ -11,60 +49,100 @@ Touch::Touch(void) {
 
 }
 
+void Touch::writeReg(uint8_t reg, uint8_t data) {
+    user_i2c_write(TP_TWI_ADDR, reg, &data, 1);
+    delay_ns(25);
+}
+
 void Touch::init(void) {
+
+    /*pinMode(PIN_TP_RST, INPUT);
+    Serial.printf(">> PIN_TP_RST : %i \n", digitalRead(PIN_TP_RST));
+    Serial.printf(">> PIN_TP_IRQ : %i \n", digitalRead(PIN_TP_IRQ));
+    delay_ns(50);*/
 
     pinMode(PIN_TP_RST, OUTPUT);
 
-    Serial.println(">> Touch reset");
-    digitalWrite(PIN_TP_RST, LOW);
-    delay_ns(5);
     digitalWrite(PIN_TP_RST, HIGH);
-    delay_ns(50);
+    delay_ns(100);
 
-    Serial.println(">> Touch init read");
-    //user_i2c_read(TP_TWI_ADDR, 0x00, &version15, 1);
-    //delay_ns(5);
-    user_i2c_read(TP_TWI_ADDR, 0x15, &version15, 1);
-    delay_ns(5);
-    user_i2c_read(TP_TWI_ADDR, 0xA7, &version15, 1);
+    digitalWrite(PIN_TP_RST, LOW);
+    delay_ns(10);
+
+    digitalWrite(PIN_TP_RST, HIGH);
+    delay_ns(100);
+
+    // Config touchpanel
+
+    //The default is 0, enabling automatic entry into low-power mode
+    writeReg(CST816_REG_DIS_AUTO_SLEEP, 0x00);
+
+    //Set reporting rate
+    writeReg(CST816_REG_NOR_SCAN_PER, 0x01);
+
+    //Report: 0x60 Gesture: 0X11 Report plus gesture: 0X71
+    //Setting Mode Announcement/Gesture
+    writeReg(CST816_REG_IRQ_CTL, 0x60);
+
+    //When the unit 1S is 0, the function is not enabled, the default is 5
+    //Set the automatic reset time When there is a touch but no gesture within X seconds, it will automatically reset
+    writeReg(CST816_REG_AUTO_RESET, 0x0);
+
+    //When the unit 1S is 0, the function is not enabled, the default is 10
+    //Set the automatic reset time Long press X seconds to automatically reset
+    writeReg(CST816_REG_LONG_PRESS_TIME, 0x10);
+
+    //Unit 0.1mS
+    //Set interrupt low pulse output width
+    writeReg(CST816_REG_IRQ_PLUSE_WIDTH, 0x02);
+
+
+    version15 = 0xFF;
+    Serial.println(">> Touch read CHIPID");
+    user_i2c_read(TP_TWI_ADDR, CST816_REG_CHIPID, &version15, 1);
+    if (version15 != CST816_CHIP_ID) {
+        if (version15 == 0xFF) {
+            Serial.println(">> Touch in sleep mode...");
+        }
+        else {
+            Serial.println(">> Touch CST816 not found...");
+        }
+    }
     delay_ns(5);
 
     read_config();
-    /*
-    [2] EnConLR - Continuous operation can slide around
-    [1] EnConUD - Slide up and down to enable continuous operation
-    [0] EnDClick - Enable Double-click action
-    */
-    const uint8_t motionMask = 0b00000001;
-    user_i2c_write(TP_TWI_ADDR, 0xEC, &motionMask, 1);
-    delay_ns(25);
-    /*
-    [7] EnTest interrupt pin test, and automatically send out low pulse periodically after being enabled.
-    [6] When EnTouch detects a touch, it periodically sends out low pulses.
-    [5] When EnChange detects a touch state change, it sends out a low pulse.
-    [4] When EnMotion detects a gesture, it sends out a low pulse.
-    [0] OnceWLP Long press gesture only sends out a low pulse signal.
-    */
-    //const uint8_t irqCtl = 0b00000001;
-    //user_i2c_write(TP_TWI_ADDR, 0xFA, &irqCtl, 1);
-    //delay_ns(15);
-
-    //user_i2c_read(TP_TWI_ADDR, 0xEC, &version15, 1);
-    //delay_ns(25);
 
 }
 
 void Touch::read_config(void) {
     Serial.println(">> Touch read config");
+
+    /*Serial.println(">> Touch read 0x15");
     user_i2c_read(TP_TWI_ADDR, 0x15, &version15, 1);
+    delay_ns(25);*/
+
+    //Serial.println(">> Touch read CST816_REG_CHIPID");
+    user_i2c_read(TP_TWI_ADDR, CST816_REG_CHIPID, &versionInfo[0], 1);
     delay_ns(25);
-    user_i2c_read(TP_TWI_ADDR, 0xA7, &versionInfo[0], 1);
+
+    //Serial.println(">> Touch read CST816_REG_PROJID");
+    user_i2c_read(TP_TWI_ADDR, CST816_REG_PROJID, &versionInfo[1], 1);
     delay_ns(25);
-    user_i2c_read(TP_TWI_ADDR, 0xA8, &versionInfo[1], 1);
+
+    //Serial.println(">> Touch read CST816_REG_FW_VER");
+    user_i2c_read(TP_TWI_ADDR, CST816_REG_FW_VER, &versionInfo[2], 1);
     delay_ns(25);
-    user_i2c_read(TP_TWI_ADDR, 0xA9, &versionInfo[2], 1);
-    delay_ns(25);
-    Serial.printf(">> Touch ID: %02X - %02X %02X %02X\n", version15, versionInfo[0], versionInfo[1], versionInfo[2]);
+
+    Serial.printf(">> Touch CHIPID : %02X PROJID : %02X FW_VER : %02X\n", versionInfo[0], versionInfo[1], versionInfo[2]);
+    /*for (uint8_t i = 0; i < 0xFF; i++)
+    {
+        user_i2c_read(TP_TWI_ADDR, i, &version15, 1);
+        Serial.printf("%02X:%02X ", i, version15);
+        if((i + 1) % 15 == 0) Serial.println();
+        delay_ns(50);
+    }
+    Serial.println();
+    Serial.println();*/
 
 }
 
@@ -74,13 +152,13 @@ void Touch::sleep(bool state) {
     digitalWrite(PIN_TP_RST, HIGH);
     delay_ns(50);
     if (state) {
-        byte standby_value = 0x03;
-        user_i2c_write(TP_TWI_ADDR, 0xA5, &standby_value, 1);
+        uint8_t standby_value = 0x03;
+        user_i2c_write(TP_TWI_ADDR, CST816_REG_SLEEP_MODE, &standby_value, 1);
     }
 }
 
 void Touch::read(void) {
-    user_i2c_read(TP_TWI_ADDR, 0x02, data_raw, 6);
+    user_i2c_read(TP_TWI_ADDR, CST816_REG_FINGER_NUM, data_raw, 6);
 }
 
 
@@ -88,7 +166,7 @@ void Touch::get(void) {
 
     byte raw[8];
 
-    user_i2c_read(TP_TWI_ADDR, 0x01, raw, 6);
+    user_i2c_read(TP_TWI_ADDR, CST816_REG_GESTURE, raw, 6);
 
     gesture = static_cast<Gestures>(raw[0]);
 
@@ -105,7 +183,7 @@ Touch::Gestures Touch::readGesture(void) {
 
     byte raw[1];
 
-    user_i2c_read(TP_TWI_ADDR, 0x01, raw, 1);
+    user_i2c_read(TP_TWI_ADDR, CST816_REG_GESTURE, raw, 1);
     gesture = static_cast<Gestures>(raw[0]);
     return gesture;
 }

@@ -45,6 +45,7 @@ void initVariant()
   digitalWrite(LED_BUILTIN, HIGH);
 
   pinMode(PIN_TP_RST, OUTPUT);
+  //digitalWrite(PIN_TP_RST, LOW);
 
   pinMode(PIN_A0, INPUT);
   pinMode(PIN_CHARGE_IRQ, INPUT);

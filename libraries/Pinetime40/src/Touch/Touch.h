@@ -50,8 +50,10 @@ class Touch
     uint16_t ypos;
     uint16_t last_xpos;
     uint16_t last_ypos;
-    uint8_t version15;
-    uint8_t versionInfo[3];
+    uint8_t version15 = 0xFF;
+    uint8_t versionInfo[3] = {0xFF};
+
+    void writeReg(uint8_t reg, uint8_t data);
 };
 
 #endif //TOUCH_H

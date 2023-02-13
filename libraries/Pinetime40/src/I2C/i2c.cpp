@@ -1,64 +1,77 @@
 #include <Arduino.h>
 #include "i2c.h"
 
-#include "Wire.h"
+//#include "Wire.h"
+
+#include "nrfx_twi.h"
 
 uint8_t _uc_pinSDA = g_ADigitalPinMap[PIN_WIRE_SDA];
 uint8_t _uc_pinSCL = g_ADigitalPinMap[PIN_WIRE_SCL];
 
-/*
-static constexpr uint32_t HwFreezedDelay{ 161000 };
+// -------------------------------------------------------------------
 
-static volatile uint32_t* pincfg_reg(uint32_t pin)
-{
-    NRF_GPIO_Type* port = nrf_gpio_pin_port_decode(&pin);
-    return &port->PIN_CNF[pin];
-}
+#define SCL_PIN_INIT_CONF                                     \
+    ( (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos) \
+    | (GPIO_PIN_CNF_DRIVE_S0D1     << GPIO_PIN_CNF_DRIVE_Pos) \
+    | (GPIO_PIN_CNF_PULL_Pullup    << GPIO_PIN_CNF_PULL_Pos)  \
+    | (GPIO_PIN_CNF_INPUT_Connect  << GPIO_PIN_CNF_INPUT_Pos) \
+    | (GPIO_PIN_CNF_DIR_Input      << GPIO_PIN_CNF_DIR_Pos))
+
+#define SDA_PIN_INIT_CONF        SCL_PIN_INIT_CONF
+
+#define SDA_PIN_UNINIT_CONF                                     \
+    ( (GPIO_PIN_CNF_SENSE_Disabled   << GPIO_PIN_CNF_SENSE_Pos) \
+    | (GPIO_PIN_CNF_DRIVE_H0H1       << GPIO_PIN_CNF_DRIVE_Pos) \
+    | (GPIO_PIN_CNF_PULL_Disabled    << GPIO_PIN_CNF_PULL_Pos)  \
+    | (GPIO_PIN_CNF_INPUT_Disconnect << GPIO_PIN_CNF_INPUT_Pos) \
+    | (GPIO_PIN_CNF_DIR_Input        << GPIO_PIN_CNF_DIR_Pos))
+
+#define SCL_PIN_UNINIT_CONF      SDA_PIN_UNINIT_CONF
+
+#define SCL_PIN_INIT_CONF_CLR                                 \
+    ( (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos) \
+    | (GPIO_PIN_CNF_DRIVE_S0D1     << GPIO_PIN_CNF_DRIVE_Pos) \
+    | (GPIO_PIN_CNF_PULL_Pullup    << GPIO_PIN_CNF_PULL_Pos)  \
+    | (GPIO_PIN_CNF_INPUT_Connect  << GPIO_PIN_CNF_INPUT_Pos) \
+    | (GPIO_PIN_CNF_DIR_Output     << GPIO_PIN_CNF_DIR_Pos))
+
+#define SDA_PIN_INIT_CONF_CLR    SCL_PIN_INIT_CONF_CLR
+
+
+static constexpr uint32_t HwFreezedDelay{ 161000 };
 
 
 static void twi_clear_bus(uint8_t uc_pinSDA, uint8_t uc_pinSCL)
 {
-    Serial.println("0.1");
-    *pincfg_reg(uc_pinSCL) = ((uint32_t)GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1 << GPIO_PIN_CNF_DRIVE_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
-    Serial.println("0.2");
-    *pincfg_reg(uc_pinSDA) = ((uint32_t)GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1 << GPIO_PIN_CNF_DRIVE_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
 
-    Serial.println("0.3");
-    delay_ns(4);
-    nrf_gpio_pin_set(uc_pinSCL);
-    Serial.println("0.3.1");
+    uint32_t twi_state = NRF_TWIM0->ENABLE;
+    NRF_TWIM0->ENABLE = (TWIM_ENABLE_ENABLE_Disabled << TWIM_ENABLE_ENABLE_Pos);
+    
+
+    //NRF_GPIO->PIN_CNF[uc_pinSCL] = SCL_PIN_INIT_CONF;
+    //NRF_GPIO->PIN_CNF[uc_pinSDA] = SDA_PIN_INIT_CONF;
+
+    pinMode(PIN_WIRE_SDA, INPUT);
+    pinMode(PIN_WIRE_SCL, INPUT);
+
+    Serial.printf(">> pinSDA : %i \n", digitalRead(PIN_WIRE_SDA));
+    Serial.printf(">> pinSCL : %i \n", digitalRead(PIN_WIRE_SCL));
+
+    /*nrf_gpio_pin_set(uc_pinSCL);
     nrf_gpio_pin_set(uc_pinSDA);
-    delay_ns(4);
-    Serial.println("0.4");
-    *pincfg_reg(uc_pinSCL) = ((uint32_t)GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1 << GPIO_PIN_CNF_DRIVE_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
-    Serial.println("0.5");
-    *pincfg_reg(uc_pinSDA) = ((uint32_t)GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1 << GPIO_PIN_CNF_DRIVE_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
-    Serial.println("0.6");
-    delay_ns(4);
-    Serial.println("1");
-    for (int i = 0; i < 16; i++)
+    delay_ns(10);
+
+    if ((nrf_gpio_pin_read(uc_pinSDA)) && (nrf_gpio_pin_read(uc_pinSCL)))
+    {
+        return;
+    }
+
+    for (int i = 0; i < 18; i++)
     {
         if (nrf_gpio_pin_read(uc_pinSDA))
         {
             if (i == 0)
             {
-                Serial.println("1.1");
                 return;
             }
             else
@@ -67,15 +80,18 @@ static void twi_clear_bus(uint8_t uc_pinSDA, uint8_t uc_pinSCL)
             }
         }
         nrf_gpio_pin_clear(uc_pinSCL);
-        delay_ns(4);
+        delay_ns(10);
         nrf_gpio_pin_set(uc_pinSCL);
-        delay_ns(4);
-        Serial.println("2");
+        delay_ns(10);
     }
     nrf_gpio_pin_clear(uc_pinSDA);
-    delay_ns(4);
+    delay_ns(10);
     nrf_gpio_pin_set(uc_pinSDA);
-    Serial.println("3");
+
+    NRF_GPIO->PIN_CNF[uc_pinSCL] = SCL_PIN_INIT_CONF_CLR;
+    NRF_GPIO->PIN_CNF[uc_pinSDA] = SDA_PIN_INIT_CONF_CLR;
+
+    NRF_TWIM0->ENABLE = twi_state;*/
 }
 
 void FixHwFreezed() {
@@ -93,11 +109,15 @@ void _wakeup() {
     NRF_TWIM0->ENABLE = (TWIM_ENABLE_ENABLE_Enabled << TWIM_ENABLE_ENABLE_Pos);
 }
 
-void wire_begin(void) {
-    //Serial.println(">> I2C clean");
-    //twi_clear_bus(_uc_pinSDA, _uc_pinSCL);
+uint8_t _write(uint8_t deviceAddress, const uint8_t* data, size_t size, bool stop);
 
-    Serial.println(">> I2C Unblock");
+void wire_begin(void) {
+    Serial.println(">> I2C clean");
+    twi_clear_bus(_uc_pinSDA, _uc_pinSCL);
+
+    /*Serial.println(">> I2C Unblock");
+    nrf_gpio_cfg_default(_uc_pinSCL);
+    nrf_gpio_cfg_default(_uc_pinSDA);
     // Unblock I2C?
     nrf_gpio_cfg(_uc_pinSCL,
         NRF_GPIO_PIN_DIR_OUTPUT,
@@ -106,25 +126,25 @@ void wire_begin(void) {
         NRF_GPIO_PIN_S0D1,
         NRF_GPIO_PIN_NOSENSE);
     nrf_gpio_pin_set(_uc_pinSCL);
-    for (uint8_t i = 0; i < 16; i++) {
+    for (uint8_t i = 0; i < 8; i++) {
         nrf_gpio_pin_toggle(_uc_pinSCL);
         delay_ns(5);
     }
     nrf_gpio_cfg_default(_uc_pinSCL);
-    delay_ns(5);
+    delay_ns(5);*/
 
     Serial.println(">> I2C Config");
-    NRF_GPIO->PIN_CNF[_uc_pinSCL] = ((uint32_t)GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos)
+    NRF_GPIO->PIN_CNF[_uc_pinSCL] = SCL_PIN_INIT_CONF;/*((uint32_t)GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos)
         | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
         | ((uint32_t)GPIO_PIN_CNF_PULL_Disabled << GPIO_PIN_CNF_PULL_Pos)
         | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1 << GPIO_PIN_CNF_DRIVE_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
+        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);*/
 
-    NRF_GPIO->PIN_CNF[_uc_pinSDA] = ((uint32_t)GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos)
+    NRF_GPIO->PIN_CNF[_uc_pinSDA] = SDA_PIN_INIT_CONF;/*((uint32_t)GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos)
         | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
         | ((uint32_t)GPIO_PIN_CNF_PULL_Disabled << GPIO_PIN_CNF_PULL_Pos)
         | ((uint32_t)GPIO_PIN_CNF_DRIVE_S0D1 << GPIO_PIN_CNF_DRIVE_Pos)
-        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
+        | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);*/
 
 
     NRF_TWIM0->FREQUENCY = TWIM_FREQUENCY_FREQUENCY_K250;
@@ -137,10 +157,10 @@ void wire_begin(void) {
     NRF_TWIM0->EVENTS_RXSTARTED = 0;
     NRF_TWIM0->EVENTS_SUSPENDED = 0;
     NRF_TWIM0->EVENTS_TXSTARTED = 0;
-
+    
     Serial.println(">> I2C Ready");
     //NRF_TWIM0->ENABLE = (TWIM_ENABLE_ENABLE_Enabled << TWIM_ENABLE_ENABLE_Pos);
-
+    
 }
 
 uint8_t _read(uint8_t deviceAddress, uint8_t* buffer, size_t size, bool stop) {
@@ -240,7 +260,7 @@ uint8_t user_i2c_read(uint8_t addr, uint8_t reg_addr, uint8_t* reg_data, uint32_
     auto ret = _write(addr, &reg_addr, 1, false);
     ret = _read(addr, reg_data, length, true);
     _sleep();
-    return 0;
+    return ret;
 }
 
 uint8_t user_i2c_write(uint8_t addr, uint8_t reg_addr, const uint8_t* reg_data, uint32_t length) {
@@ -250,10 +270,11 @@ uint8_t user_i2c_write(uint8_t addr, uint8_t reg_addr, const uint8_t* reg_data, 
     memcpy(internalBuffer + 1, reg_data, length);
     auto ret = _write(addr, internalBuffer, length + 1, true);
     _sleep();
-    return 0;
+    return ret;
 }
 
-*/
+
+/*
 void init_i2c() {
 
     Serial.println("> I2C init");
@@ -301,3 +322,4 @@ uint8_t user_i2c_write(uint8_t addr, uint8_t reg_addr, const uint8_t* reg_data, 
     Wire.endTransmission(true);
     return 0;
 }
+*/
