@@ -319,16 +319,20 @@ bool ExternalFlash::begin(void)
         .attr_max = 50,
     };*/
 
-    Serial.println("Serial Flash Info : ");
+    Serial.println(">> Serial Flash Info : ");
 
     nrf52_qspi_begin();
 
     uint8_t jedec_ids[4];
     nrf52_qspi_read_command(SFLASH_CMD_READ_JEDEC_ID, jedec_ids, 4);
 
-    Serial.printf("JEDEC ID: %02X %02X %02X %02X\n", jedec_ids[0], jedec_ids[1], jedec_ids[2], jedec_ids[3]);
+    Serial.printf(">> JEDEC ID: %02X %02X %02X %02X\n", jedec_ids[0], jedec_ids[1], jedec_ids[2], jedec_ids[3]);    
 
-    Serial.println("");
+    if(jedec_ids[0] != 0x0B || jedec_ids[1] != 0x40 ) {
+        // error no flash or flash error...
+        Serial.println(">>> Error, no flash found or flash read error.");
+        return false;
+    }
 
     // The write in progress bit should be low.
     while (readStatus() & 0x01) {}
@@ -383,25 +387,25 @@ bool ExternalFlash::begin(void)
 
     //return false;
     // failed to mount, erase all sector then format and mount again
-    /*
+    
     if (!Adafruit_LittleFS::begin())
     {
-        Serial.println("Erasing External chip!");
+        Serial.println(">> Erasing External chip!");
         if (!eraseChip()) {
-            Serial.println("Failed to erase chip!");
+            Serial.println(">>> Failed to erase chip!");
             return false;
         }
         waitUntilReady();
-        Serial.println("Successfully erased chip!");
+        Serial.println(">> Successfully erased chip!");
 
-        Serial.println("Format External fs");
+        Serial.println(">> Format External file system");
         // lfs format
         this->format();
 
         // mount again if still failed, give up
         if (!Adafruit_LittleFS::begin()) return false;
     }
-    Serial.println("External FS ready !");
-    */
+    Serial.println(">> External file system ready !");
+    
     return true;
 }

@@ -54,8 +54,8 @@ static void twi_clear_bus(uint8_t uc_pinSDA, uint8_t uc_pinSCL)
     | ((uint32_t)GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos);
 
   delayMicroseconds(4);
-  //nrf_gpio_pin_set(uc_pinSCL);
-  //nrf_gpio_pin_set(uc_pinSDA);
+  nrf_gpio_pin_set(uc_pinSCL);
+  nrf_gpio_pin_set(uc_pinSDA);
 
   *pincfg_reg(uc_pinSCL) = ((uint32_t)GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos)
     | ((uint32_t)GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
@@ -131,7 +131,7 @@ void TwoWire::begin(void) {
   //*(volatile uint32_t *)0x40003FFC = 0;
   //*(volatile uint32_t *)0x40003FFC;
   //*(volatile uint32_t *)0x40003FFC = 1;
-  _p_twim->FREQUENCY = TWIM_FREQUENCY_FREQUENCY_K100;
+  _p_twim->FREQUENCY = TWIM_FREQUENCY_FREQUENCY_K250;
   _p_twim->ENABLE = (TWIM_ENABLE_ENABLE_Enabled << TWIM_ENABLE_ENABLE_Pos);
   _p_twim->PSEL.SCL = _uc_pinSCL;
   _p_twim->PSEL.SDA = _uc_pinSDA;

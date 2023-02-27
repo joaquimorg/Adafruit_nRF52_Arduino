@@ -75,7 +75,7 @@ void Touch::init(void) {
     // Config touchpanel
 
     //The default is 0, enabling automatic entry into low-power mode
-    writeReg(CST816_REG_DIS_AUTO_SLEEP, 0x00);
+    //writeReg(CST816_REG_DIS_AUTO_SLEEP, 0x00);
 
     //Set reporting rate
     writeReg(CST816_REG_NOR_SCAN_PER, 0x01);
@@ -96,20 +96,6 @@ void Touch::init(void) {
     //Set interrupt low pulse output width
     writeReg(CST816_REG_IRQ_PLUSE_WIDTH, 0x02);
 
-
-    version15 = 0xFF;
-    Serial.println(">> Touch read CHIPID");
-    user_i2c_read(TP_TWI_ADDR, CST816_REG_CHIPID, &version15, 1);
-    if (version15 != CST816_CHIP_ID) {
-        if (version15 == 0xFF) {
-            Serial.println(">> Touch in sleep mode...");
-        }
-        else {
-            Serial.println(">> Touch CST816 not found...");
-        }
-    }
-    delay_ns(5);
-
     read_config();
 
 }
@@ -117,9 +103,10 @@ void Touch::init(void) {
 void Touch::read_config(void) {
     Serial.println(">> Touch read config");
 
-    /*Serial.println(">> Touch read 0x15");
+    /*Serial.println(">> Touch read 0x15");*/
+    writeReg(0x15, 0x00);
     user_i2c_read(TP_TWI_ADDR, 0x15, &version15, 1);
-    delay_ns(25);*/
+    delay_ns(50);
 
     //Serial.println(">> Touch read CST816_REG_CHIPID");
     user_i2c_read(TP_TWI_ADDR, CST816_REG_CHIPID, &versionInfo[0], 1);
@@ -134,16 +121,15 @@ void Touch::read_config(void) {
     delay_ns(25);
 
     Serial.printf(">> Touch CHIPID : %02X PROJID : %02X FW_VER : %02X\n", versionInfo[0], versionInfo[1], versionInfo[2]);
-    /*for (uint8_t i = 0; i < 0xFF; i++)
-    {
-        user_i2c_read(TP_TWI_ADDR, i, &version15, 1);
-        Serial.printf("%02X:%02X ", i, version15);
-        if((i + 1) % 15 == 0) Serial.println();
-        delay_ns(50);
-    }
-    Serial.println();
-    Serial.println();*/
 
+    if (versionInfo[0] != CST816_CHIP_ID) {
+        if (versionInfo[0] == 0xFF) {
+            Serial.println(">> Touch in sleep mode...");
+        }
+        else {
+            Serial.println(">> Touch CST816 not found...");
+        }
+    }
 }
 
 void Touch::sleep(bool state) {

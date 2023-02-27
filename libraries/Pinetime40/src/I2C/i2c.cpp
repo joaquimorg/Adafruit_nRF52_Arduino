@@ -12,7 +12,7 @@ uint8_t _uc_pinSCL = g_ADigitalPinMap[PIN_WIRE_SCL];
 void init_i2c() {
 
     Serial.println("> I2C init");
-    Serial.println(">> Unblock I2C");
+    /*Serial.println(">> Unblock I2C");
     // Unblock I2C?
     nrf_gpio_cfg(_uc_pinSCL,
         NRF_GPIO_PIN_DIR_OUTPUT,
@@ -25,7 +25,7 @@ void init_i2c() {
         nrf_gpio_pin_toggle(_uc_pinSCL);
         delay_ns(5);
     }
-    nrf_gpio_cfg_default(_uc_pinSCL);
+    nrf_gpio_cfg_default(_uc_pinSCL);*/
 
     Wire.begin();
 }
