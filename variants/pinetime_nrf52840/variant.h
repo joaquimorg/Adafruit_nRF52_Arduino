@@ -74,7 +74,7 @@ static const uint8_t AREF = PIN_AREF;
 #define PIN_TP_IRQ          (17)
 #define PIN_TP_RST          (16)
 
-#define PIN_BMA421_IRQ      (12)
+#define PIN_BMA400_IRQ      (12)
 
 #define PIN_KEY_ACTION      (11)
 

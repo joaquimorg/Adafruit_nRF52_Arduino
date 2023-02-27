@@ -50,7 +50,7 @@ void initVariant()
   pinMode(PIN_A0, INPUT);
   pinMode(PIN_CHARGE_IRQ, INPUT);
   pinMode(PIN_KEY_ACTION, INPUT);
-  pinMode(PIN_BMA421_IRQ, INPUT);
+  pinMode(PIN_BMA400_IRQ, INPUT);
   pinMode(PIN_TP_IRQ, INPUT);
 }
 

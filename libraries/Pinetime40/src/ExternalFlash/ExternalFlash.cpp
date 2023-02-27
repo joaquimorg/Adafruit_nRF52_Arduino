@@ -383,6 +383,7 @@ bool ExternalFlash::begin(void)
 
     //return false;
     // failed to mount, erase all sector then format and mount again
+    /*
     if (!Adafruit_LittleFS::begin())
     {
         Serial.println("Erasing External chip!");
@@ -401,6 +402,6 @@ bool ExternalFlash::begin(void)
         if (!Adafruit_LittleFS::begin()) return false;
     }
     Serial.println("External FS ready !");
-
+    */
     return true;
 }
